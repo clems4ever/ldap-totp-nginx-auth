@@ -1,0 +1,20 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: authelia
+  labels:
+    app.kubernetes.io/instance: authelia
+    app.kubernetes.io/name: authelia
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: authelia
+    app.kubernetes.io/name: authelia
+  type: ClusterIP
+  sessionAffinity: None
+...
