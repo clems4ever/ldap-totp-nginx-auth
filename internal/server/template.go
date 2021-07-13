@@ -23,17 +23,17 @@ func ServeTemplatedFile(publicDir, file, base, rememberMe, resetPassword, sessio
 
 	f, err := assets.Open(publicDir + file)
 	if err != nil {
-		logger.Fatalf("Unable to open %s: %s", file, err)
+		logger.Fatalf("unable to open %s: %s", file, err)
 	}
 
 	b, err := ioutil.ReadAll(f)
 	if err != nil {
-		logger.Fatalf("Unable to read %s: %s", file, err)
+		logger.Fatalf("unable to read %s: %s", file, err)
 	}
 
 	tmpl, err := template.New("file").Parse(string(b))
 	if err != nil {
-		logger.Fatalf("Unable to parse %s template: %s", file, err)
+		logger.Fatalf("unable to parse %s template: %s", file, err)
 	}
 
 	return func(ctx *fasthttp.RequestCtx) {
@@ -57,8 +57,8 @@ func ServeTemplatedFile(publicDir, file, base, rememberMe, resetPassword, sessio
 
 		err := tmpl.Execute(ctx.Response.BodyWriter(), struct{ Base, CSPNonce, RememberMe, ResetPassword, Session, Theme string }{Base: base, CSPNonce: nonce, RememberMe: rememberMe, ResetPassword: resetPassword, Session: session, Theme: theme})
 		if err != nil {
-			ctx.Error("An error occurred", 503)
-			logger.Errorf("Unable to execute template: %v", err)
+			ctx.Error("an error occurred", 503)
+			logger.Errorf("unable to execute template: %v", err)
 
 			return
 		}

@@ -167,14 +167,14 @@ func StartServer(configuration schema.Configuration, providers middlewares.Provi
 
 	listener, err := net.Listen("tcp", addrPattern)
 	if err != nil {
-		logger.Fatalf("Error initializing listener: %s", err)
+		logger.Fatalf("error initializing listener: %s", err)
 	}
 
 	// TODO(clems4ever): move that piece to a more related location, probably in the configuration package.
 	if configuration.AuthenticationBackend.File != nil && configuration.AuthenticationBackend.File.Password.Algorithm == "argon2id" && runtime.GOOS == "linux" {
 		f, err := ioutil.ReadFile("/sys/fs/cgroup/memory/memory.limit_in_bytes")
 		if err != nil {
-			logger.Warnf("Error reading hosts memory limit: %s", err)
+			logger.Warnf("error reading hosts memory limit: %s", err)
 		} else {
 			m, _ := strconv.Atoi(strings.TrimSuffix(string(f), "\n"))
 			hostMem := float64(m) / 1024 / 1024 / 1024
@@ -182,7 +182,7 @@ func StartServer(configuration schema.Configuration, providers middlewares.Provi
 
 			if hostMem/argonMem <= 2 {
 				logger.Warnf("Authelia's password hashing memory parameter is set to: %gGB this is %g%% of the available memory: %gGB", argonMem, argonMem/hostMem*100, hostMem)
-				logger.Warn("Please read https://www.authelia.com/docs/configuration/authentication/file.html#memory and tune your deployment")
+				logger.Warn("please read https://www.authelia.com/docs/configuration/authentication/file.html#memory and tune your deployment")
 			}
 		}
 	}
