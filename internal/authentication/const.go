@@ -56,11 +56,10 @@ const (
 // HashingPossibleSaltCharacters represents valid hashing runes.
 var HashingPossibleSaltCharacters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/")
 
-// ErrUserNotFound indicates the user wasn't found in the authentication backend.
-var ErrUserNotFound = errors.New("user not found")
-
-const argon2id = "argon2id"
-const sha512 = "sha512"
+const (
+	argon2id = "argon2id"
+	sha512   = "sha512"
+)
 
 const testPassword = "my;secure*password"
 
@@ -69,3 +68,10 @@ const fileAuthenticationMode = 0600
 // OWASP recommends to escape some special characters.
 // https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.md
 const specialLDAPRunes = ",#+<>;\"="
+
+var (
+	// ErrUserNotFound indicates the user wasn't found in the authentication backend.
+	ErrUserNotFound = errors.New("user not found")
+
+	errEmptyGroupsFilter = errors.New("empty groups filter")
+)

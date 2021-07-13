@@ -2,21 +2,23 @@ package schema
 
 // LDAPAuthenticationBackendConfiguration represents the configuration related to LDAP server.
 type LDAPAuthenticationBackendConfiguration struct {
-	Implementation       string     `mapstructure:"implementation"`
-	URL                  string     `mapstructure:"url"`
-	BaseDN               string     `mapstructure:"base_dn"`
-	AdditionalUsersDN    string     `mapstructure:"additional_users_dn"`
-	UsersFilter          string     `mapstructure:"users_filter"`
-	AdditionalGroupsDN   string     `mapstructure:"additional_groups_dn"`
-	GroupsFilter         string     `mapstructure:"groups_filter"`
-	GroupNameAttribute   string     `mapstructure:"group_name_attribute"`
-	UsernameAttribute    string     `mapstructure:"username_attribute"`
-	MailAttribute        string     `mapstructure:"mail_attribute"`
-	DisplayNameAttribute string     `mapstructure:"display_name_attribute"`
-	User                 string     `mapstructure:"user"`
-	Password             string     `mapstructure:"password"`
-	StartTLS             bool       `mapstructure:"start_tls"`
-	TLS                  *TLSConfig `mapstructure:"tls"`
+	Implementation             string     `mapstructure:"implementation"`
+	URL                        string     `mapstructure:"url"`
+	BaseDN                     string     `mapstructure:"base_dn"`
+	AdditionalUsersDN          string     `mapstructure:"additional_users_dn"`
+	UsersFilter                string     `mapstructure:"users_filter"`
+	AdditionalGroupsDN         string     `mapstructure:"additional_groups_dn"`
+	GroupsFilter               string     `mapstructure:"groups_filter"`
+	GroupNameAttribute         string     `mapstructure:"group_name_attribute"`
+	UsernameAttribute          string     `mapstructure:"username_attribute"`
+	MailAttribute              string     `mapstructure:"mail_attribute"`
+	DisplayNameAttribute       string     `mapstructure:"display_name_attribute"`
+	DistinguishedNameAttribute string     `mapstructure:"distinguished_name_attribute"`
+	GroupsAttribute            string     `mapstructure:"groups_attribute"`
+	User                       string     `mapstructure:"user"`
+	Password                   string     `mapstructure:"password"`
+	StartTLS                   bool       `mapstructure:"start_tls"`
+	TLS                        *TLSConfig `mapstructure:"tls"`
 }
 
 // FileAuthenticationBackendConfiguration represents the configuration related to file-based backend.
@@ -72,11 +74,12 @@ var DefaultPasswordSHA512Configuration = PasswordConfiguration{
 
 // DefaultLDAPAuthenticationBackendConfiguration represents the default LDAP config.
 var DefaultLDAPAuthenticationBackendConfiguration = LDAPAuthenticationBackendConfiguration{
-	Implementation:       LDAPImplementationCustom,
-	UsernameAttribute:    "uid",
-	MailAttribute:        "mail",
-	DisplayNameAttribute: "displayname",
-	GroupNameAttribute:   "cn",
+	Implementation:             LDAPImplementationCustom,
+	UsernameAttribute:          "uid",
+	MailAttribute:              "mail",
+	DisplayNameAttribute:       "displayname",
+	DistinguishedNameAttribute: "dn",
+	GroupNameAttribute:         "cn",
 	TLS: &TLSConfig{
 		MinimumVersion: "TLS1.2",
 	},
@@ -84,10 +87,22 @@ var DefaultLDAPAuthenticationBackendConfiguration = LDAPAuthenticationBackendCon
 
 // DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration represents the default LDAP config for the MSAD Implementation.
 var DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration = LDAPAuthenticationBackendConfiguration{
-	UsersFilter:          "(&(|({username_attribute}={input})({mail_attribute}={input}))(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.803:=2)(!pwdLastSet=0))",
-	UsernameAttribute:    "sAMAccountName",
-	MailAttribute:        "mail",
-	DisplayNameAttribute: "displayName",
-	GroupsFilter:         "(&(member={dn})(objectClass=group))",
-	GroupNameAttribute:   "cn",
+	UsersFilter:                "(&(|({username_attribute}={input})({mail_attribute}={input}))(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.803:=2)(!pwdLastSet=0))",
+	UsernameAttribute:          "sAMAccountName",
+	MailAttribute:              "mail",
+	DisplayNameAttribute:       "displayName",
+	DistinguishedNameAttribute: "distinguishedName",
+	GroupsFilter:               "(&(member={dn})(objectClass=group))",
+	GroupNameAttribute:         "cn",
+}
+
+// DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration represents the default LDAP config for the MSAD Implementation.
+var DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration = LDAPAuthenticationBackendConfiguration{
+	UsersFilter:                "(&(|({username_attribute}={input})({mail_attribute}={input}))(objectClass=inetorgperson))",
+	UsernameAttribute:          "uid",
+	MailAttribute:              "mail",
+	DisplayNameAttribute:       "displayName",
+	DistinguishedNameAttribute: "dn",
+	GroupsAttribute:            "memberOf",
+	GroupNameAttribute:         "cn",
 }

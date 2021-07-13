@@ -6,20 +6,29 @@ import (
 
 const argon2id = "argon2id"
 
-// ProfileRefreshDisabled represents a value for refresh_interval that disables the check entirely.
-const ProfileRefreshDisabled = "disable"
+const (
+	// ProfileRefreshDisabled represents a value for refresh_interval that disables the check entirely.
+	ProfileRefreshDisabled = "disable"
 
-// ProfileRefreshAlways represents a value for refresh_interval that's the same as 0ms.
-const ProfileRefreshAlways = "always"
+	// ProfileRefreshAlways represents a value for refresh_interval that's the same as 0ms.
+	ProfileRefreshAlways = "always"
+)
 
-// RefreshIntervalDefault represents the default value of refresh_interval.
-const RefreshIntervalDefault = "5m"
+const (
+	// RefreshIntervalDefault represents the default value of refresh_interval.
+	RefreshIntervalDefault = "5m"
 
-// RefreshIntervalAlways represents the duration value refresh interval should have if set to always.
-const RefreshIntervalAlways = 0 * time.Millisecond
+	// RefreshIntervalAlways represents the duration value refresh interval should have if set to always.
+	RefreshIntervalAlways = 0 * time.Millisecond
+)
 
-// LDAPImplementationCustom is the string for the custom LDAP implementation.
-const LDAPImplementationCustom = "custom"
+const (
+	// LDAPImplementationCustom is the string for the custom LDAP implementation.
+	LDAPImplementationCustom = "custom"
 
-// LDAPImplementationActiveDirectory is the string for the Active Directory LDAP implementation.
-const LDAPImplementationActiveDirectory = "activedirectory"
+	// LDAPImplementationActiveDirectory is the string for the Active Directory LDAP implementation.
+	LDAPImplementationActiveDirectory = "activedirectory"
+
+	// LDAPImplementationFreeIPA is the string for the FreeIPA LDAP implementation.
+	LDAPImplementationFreeIPA = "freeipa"
+)

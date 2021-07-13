@@ -120,6 +120,8 @@ func validateLDAPAuthenticationBackend(configuration *schema.LDAPAuthenticationB
 		setDefaultImplementationCustomLDAPAuthenticationBackend(configuration)
 	case schema.LDAPImplementationActiveDirectory:
 		setDefaultImplementationActiveDirectoryLDAPAuthenticationBackend(configuration)
+	case schema.LDAPImplementationFreeIPA:
+		setDefaultImplementationFreeIPALDAPAuthenticationBackend(configuration)
 	default:
 		validator.Push(fmt.Errorf("authentication backend ldap implementation must be blank or one of the following values `%s`, `%s`", schema.LDAPImplementationCustom, schema.LDAPImplementationActiveDirectory))
 	}
@@ -173,7 +175,7 @@ func validateLDAPURL(ldapURL string, validator *schema.StructValidator) (finalUR
 	return parsedURL.String(), parsedURL.Hostname()
 }
 
-func validateLDAPRequiredParameters(configuration *schema.LDAPAuthenticationBackendConfiguration, validator *schema.StructValidator) {
+func validateLDAPRequiredParameters(configuration *schema.LDAPAuthenticationBackendConfiguration, validator *schema.StructValidator) { //nolint: gocyclo
 	// TODO: see if it's possible to disable this check if disable_reset_password is set and when anonymous/user binding is supported (#101 and #387)
 	if configuration.User == "" {
 		validator.Push(errors.New("Please provide a user name to connect to the LDAP server"))
@@ -207,36 +209,13 @@ func validateLDAPRequiredParameters(configuration *schema.LDAPAuthenticationBack
 		}
 	}
 
-	if configuration.GroupsFilter == "" {
+	switch {
+	case configuration.GroupsFilter != "" && configuration.GroupsAttribute != "":
+		validator.Push(fmt.Errorf(errFmtLDAPBothGroupsFilterAndGroupsAttributeSet))
+	case configuration.GroupsFilter == "" && configuration.GroupsAttribute == "":
 		validator.Push(errors.New("Please provide a groups filter with `groups_filter` attribute"))
-	} else if !strings.HasPrefix(configuration.GroupsFilter, "(") || !strings.HasSuffix(configuration.GroupsFilter, ")") {
+	case configuration.GroupsFilter != "" && (!strings.HasPrefix(configuration.GroupsFilter, "(") || !strings.HasSuffix(configuration.GroupsFilter, ")")):
 		validator.Push(errors.New("The groups filter should contain enclosing parenthesis. For instance cn={input} should be (cn={input})"))
-	}
-}
-
-func setDefaultImplementationActiveDirectoryLDAPAuthenticationBackend(configuration *schema.LDAPAuthenticationBackendConfiguration) {
-	if configuration.UsersFilter == "" {
-		configuration.UsersFilter = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.UsersFilter
-	}
-
-	if configuration.UsernameAttribute == "" {
-		configuration.UsernameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.UsernameAttribute
-	}
-
-	if configuration.DisplayNameAttribute == "" {
-		configuration.DisplayNameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.DisplayNameAttribute
-	}
-
-	if configuration.MailAttribute == "" {
-		configuration.MailAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.MailAttribute
-	}
-
-	if configuration.GroupsFilter == "" {
-		configuration.GroupsFilter = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.GroupsFilter
-	}
-
-	if configuration.GroupNameAttribute == "" {
-		configuration.GroupNameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.GroupNameAttribute
 	}
 }
 
@@ -255,5 +234,69 @@ func setDefaultImplementationCustomLDAPAuthenticationBackend(configuration *sche
 
 	if configuration.DisplayNameAttribute == "" {
 		configuration.DisplayNameAttribute = schema.DefaultLDAPAuthenticationBackendConfiguration.DisplayNameAttribute
+	}
+
+	if configuration.DistinguishedNameAttribute == "" {
+		configuration.DistinguishedNameAttribute = schema.DefaultLDAPAuthenticationBackendConfiguration.DistinguishedNameAttribute
+	}
+}
+
+func setDefaultImplementationActiveDirectoryLDAPAuthenticationBackend(configuration *schema.LDAPAuthenticationBackendConfiguration) {
+	if configuration.UsersFilter == "" {
+		configuration.UsersFilter = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.UsersFilter
+	}
+
+	if configuration.UsernameAttribute == "" {
+		configuration.UsernameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.UsernameAttribute
+	}
+
+	if configuration.MailAttribute == "" {
+		configuration.MailAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.MailAttribute
+	}
+
+	if configuration.DisplayNameAttribute == "" {
+		configuration.DisplayNameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.DisplayNameAttribute
+	}
+
+	if configuration.DistinguishedNameAttribute == "" {
+		configuration.DistinguishedNameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.DistinguishedNameAttribute
+	}
+
+	if configuration.GroupsFilter == "" {
+		configuration.GroupsFilter = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.GroupsFilter
+	}
+
+	if configuration.GroupNameAttribute == "" {
+		configuration.GroupNameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationActiveDirectoryConfiguration.GroupNameAttribute
+	}
+}
+
+func setDefaultImplementationFreeIPALDAPAuthenticationBackend(configuration *schema.LDAPAuthenticationBackendConfiguration) {
+	if configuration.UsersFilter == "" {
+		configuration.UsersFilter = schema.DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration.UsersFilter
+	}
+
+	if configuration.UsernameAttribute == "" {
+		configuration.UsernameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration.UsernameAttribute
+	}
+
+	if configuration.MailAttribute == "" {
+		configuration.MailAttribute = schema.DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration.MailAttribute
+	}
+
+	if configuration.DisplayNameAttribute == "" {
+		configuration.DisplayNameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration.DisplayNameAttribute
+	}
+
+	if configuration.DistinguishedNameAttribute == "" {
+		configuration.DistinguishedNameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration.DistinguishedNameAttribute
+	}
+
+	if configuration.GroupsAttribute == "" && configuration.GroupsFilter == "" {
+		configuration.GroupsAttribute = schema.DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration.GroupsAttribute
+	}
+
+	if configuration.GroupNameAttribute == "" {
+		configuration.GroupNameAttribute = schema.DefaultLDAPAuthenticationBackendImplementationFreeIPAConfiguration.GroupNameAttribute
 	}
 }

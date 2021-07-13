@@ -24,6 +24,7 @@ type LDAPUserProvider struct {
 	connectionFactory LDAPConnectionFactory
 	usersBaseDN       string
 	groupsBaseDN      string
+	profileAttributes []string
 
 	supportExtensionPasswdModify bool
 }
@@ -78,6 +79,16 @@ func newLDAPUserProvider(configuration schema.LDAPAuthenticationBackendConfigura
 }
 
 func (p *LDAPUserProvider) parseDynamicConfiguration() {
+	p.profileAttributes = []string{
+		p.configuration.DisplayNameAttribute,
+		p.configuration.MailAttribute,
+		p.configuration.UsernameAttribute,
+	}
+
+	if p.configuration.GroupsAttribute != "" {
+		p.profileAttributes = append(p.profileAttributes, p.configuration.GroupsAttribute)
+	}
+
 	p.configuration.UsersFilter = strings.ReplaceAll(p.configuration.UsersFilter, "{username_attribute}", p.configuration.UsernameAttribute)
 	p.configuration.UsersFilter = strings.ReplaceAll(p.configuration.UsersFilter, "{mail_attribute}", p.configuration.MailAttribute)
 	p.configuration.UsersFilter = strings.ReplaceAll(p.configuration.UsersFilter, "{display_name_attribute}", p.configuration.DisplayNameAttribute)
@@ -193,6 +204,7 @@ type ldapUserProfile struct {
 	Emails      []string
 	DisplayName string
 	Username    string
+	Groups      []string
 }
 
 func (p *LDAPUserProvider) resolveUsersFilter(userFilter string, inputUsername string) string {
@@ -209,15 +221,10 @@ func (p *LDAPUserProvider) resolveUsersFilter(userFilter string, inputUsername s
 func (p *LDAPUserProvider) getUserProfile(conn LDAPConnection, inputUsername string) (*ldapUserProfile, error) {
 	userFilter := p.resolveUsersFilter(p.configuration.UsersFilter, inputUsername)
 
-	attributes := []string{"dn",
-		p.configuration.DisplayNameAttribute,
-		p.configuration.MailAttribute,
-		p.configuration.UsernameAttribute}
-
 	// Search for the given username.
 	searchRequest := ldap.NewSearchRequest(
 		p.usersBaseDN, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
-		1, 0, false, userFilter, attributes, nil,
+		1, 0, false, userFilter, p.profileAttributes, nil,
 	)
 
 	sr, err := conn.Search(searchRequest)
@@ -254,6 +261,10 @@ func (p *LDAPUserProvider) getUserProfile(conn LDAPConnection, inputUsername str
 
 			userProfile.Username = attr.Values[0]
 		}
+
+		if attr.Name == p.configuration.GroupsAttribute && p.configuration.GroupsAttribute != "" {
+			userProfile.Groups = attr.Values
+		}
 	}
 
 	if userProfile.DN == "" {
@@ -263,7 +274,17 @@ func (p *LDAPUserProvider) getUserProfile(conn LDAPConnection, inputUsername str
 	return &userProfile, nil
 }
 
-func (p *LDAPUserProvider) resolveGroupsFilter(inputUsername string, profile *ldapUserProfile) (string, error) { //nolint:unparam
+func (p *LDAPUserProvider) resolveGroupsFilter(inputUsername string, profile *ldapUserProfile) (filter string, err error) {
+	if p.configuration.GroupsAttribute != "" {
+		filter = ldapBuildGroupsFilterFromGroupsAttribute(profile.Groups, p.configuration.DistinguishedNameAttribute)
+
+		if filter == "" {
+			return filter, errEmptyGroupsFilter
+		}
+
+		return filter, nil
+	}
+
 	inputUsername = p.ldapEscape(inputUsername)
 
 	// The {input} placeholder is replaced by the users username input.
@@ -293,31 +314,30 @@ func (p *LDAPUserProvider) GetDetails(inputUsername string) (*UserDetails, error
 	}
 
 	groupsFilter, err := p.resolveGroupsFilter(inputUsername, profile)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to create group filter for user %s. Cause: %s", inputUsername, err)
-	}
 
-	// Search for the given username.
-	searchGroupRequest := ldap.NewSearchRequest(
-		p.groupsBaseDN, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
-		0, 0, false, groupsFilter, []string{p.configuration.GroupNameAttribute}, nil,
-	)
+	var groups []string
 
-	sr, err := conn.Search(searchGroupRequest)
+	if err != errEmptyGroupsFilter {
+		// Search for the given username.
+		searchGroupRequest := ldap.NewSearchRequest(
+			p.groupsBaseDN, ldap.ScopeWholeSubtree, ldap.NeverDerefAliases,
+			0, 0, false, groupsFilter, []string{p.configuration.GroupNameAttribute}, nil,
+		)
 
-	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve groups of user %s. Cause: %s", inputUsername, err)
-	}
+		sr, err := conn.Search(searchGroupRequest)
 
-	groups := make([]string, 0)
-
-	for _, res := range sr.Entries {
-		if len(res.Attributes) == 0 {
-			p.logger.Warningf("No groups retrieved from LDAP for user %s", inputUsername)
-			break
+		if err != nil {
+			return nil, fmt.Errorf("Unable to retrieve groups of user %s. Cause: %s", inputUsername, err)
 		}
-		// Append all values of the document. Normally there should be only one per document.
-		groups = append(groups, res.Attributes[0].Values...)
+
+		for _, res := range sr.Entries {
+			if len(res.Attributes) == 0 {
+				p.logger.Warningf("No groups retrieved from LDAP for user %s", inputUsername)
+				break
+			}
+			// Append all values of the document. Normally there should be only one per document.
+			groups = append(groups, res.Attributes[0].Values...)
+		}
 	}
 
 	return &UserDetails{

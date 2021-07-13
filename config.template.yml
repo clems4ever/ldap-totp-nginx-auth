@@ -209,6 +209,11 @@ authentication_backend:
     ## The attribute holding the display name of the user. This will be used to greet an authenticated user.
     # display_name_attribute: displayname
 
+    ## The groups_attribute value should not be set under normal circumstances. This must not be set at the same time
+    ## as the groups_filter, and is used specifically for LDAP instances that both support the attribute and do not
+    ## support another means to obtain a list of users groups such as FreeIPA.
+    # groups_attribute: memberOf
+
     ## The username and password of the admin user.
     user: cn=admin,dc=example,dc=com
     ## Password can also be set using a secret: https://www.authelia.com/docs/configuration/secrets.html

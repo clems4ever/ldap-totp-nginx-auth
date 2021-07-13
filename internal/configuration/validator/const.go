@@ -1,6 +1,9 @@
 package validator
 
 const (
+	errFmtLDAPBothGroupsFilterAndGroupsAttributeSet = "authentication backend (ldap): both groups_filter and " +
+		"groups_attribute are set but only one of these can be set"
+
 	errFmtDeprecatedConfigurationKey = "[DEPRECATED] The %s configuration option is deprecated and will be " +
 		"removed in %s, please use %s instead"
 	errFmtReplacedConfigurationKey = "invalid configuration key '%s' was replaced by '%s'"
@@ -217,6 +220,7 @@ var validKeys = []string{
 	"authentication_backend.ldap.group_name_attribute",
 	"authentication_backend.ldap.mail_attribute",
 	"authentication_backend.ldap.display_name_attribute",
+	"authentication_backend.ldap.groups_attribute",
 	"authentication_backend.ldap.user",
 	"authentication_backend.ldap.start_tls",
 	"authentication_backend.ldap.tls.minimum_version",

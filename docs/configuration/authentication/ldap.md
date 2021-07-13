@@ -32,6 +32,7 @@ authentication_backend:
     groups_filter: (&(member={dn})(objectclass=groupOfNames))
     group_name_attribute: cn
     mail_attribute: mail
+    groups_attribute: ""
     display_name_attribute: displayname
     user: cn=admin,dc=example,dc=com
     password: password
@@ -166,6 +167,12 @@ register a second factor device.
 
 The attribute to retrieve which is shown on the Web UI to the user when they log in.
 
+### groups_attribute
+
+This is a special attribute on user objects that contains a list of the distinguishedNames of the groups they are a
+member of. This cannot be set at the same time as the [groups filter](#groups_filter). Both [base dn](#base_dn) and
+the [additional groups dn](#additional_groups_dn) are still used for the search base.
+
 ### user
 
 The distinguished name of the user paired with the password to bind with for lookup and password change operations.
@@ -177,7 +184,7 @@ Can also be defined using a [secret](../secrets.md) which is the recommended for
 
 ## Implementation Guide
 
-There are currently two implementations, `custom` and `activedirectory`. The `activedirectory` implementation
+The current implementations are `custom`, `freeipa`, and `activedirectory`. The `activedirectory` implementation
 must be used if you wish to allow users to change or reset their password as Active Directory
 uses a custom attribute for this, and an input format other implementations do not use. The long term
 intention of this is to have logical defaults for various RFC implementations of LDAP.
@@ -187,13 +194,15 @@ intention of this is to have logical defaults for various RFC implementations of
 The below tables describes the current attribute defaults for each implementation.
 
 #### Attribute defaults
+
 This table describes the attribute defaults for each implementation. i.e. the username_attribute is
 described by the Username column.
 
-|Implementation |Username      |Display Name|Mail|Group Name|
-|:-------------:|:------------:|:----------:|:--:|:--------:|
-|custom         |n/a           |displayname |mail|cn        |
-|activedirectory|sAMAccountName|displayname |mail|cn        |
+|Implementation |Username      |Display Name|Mail|Group Name|Groups  |
+|:-------------:|:------------:|:----------:|:--:|:--------:|:------:|
+|custom         |n/a           |displayname |mail|cn        |N/A     |
+|activedirectory|sAMAccountName|displayName |mail|cn        |N/A     |
+|freeipa        |uid           |displayName |mail|cn        |memberOf|
 
 #### Filter defaults
 
@@ -207,7 +216,7 @@ makes sure that value is not 0 which means the password requires changing at the
 |:-------------:|:------------:|:-----------:|
 |custom         |n/a           |n/a       |
 |activedirectory|(&(&#124;({username_attribute}={input})({mail_attribute}={input}))(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.803:=2)(!pwdLastSet=0))|(&(member={dn})(objectClass=group)(objectCategory=group))|
-
+|freeipa        |(&(&#124;({username_attribute}={input})({mail_attribute}={input}))(objectClass=inetorgperson))|N/A|
 
 ## Refresh Interval
 
