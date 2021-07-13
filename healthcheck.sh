@@ -2,8 +2,8 @@
 
 AUTHELIA_CONFIG=$(pgrep -af authelia | awk '{print $NF}')
 AUTHELIA_SCHEME=$(grep ^tls "${AUTHELIA_CONFIG}")
-AUTHELIA_HOST=$(grep ^host "${AUTHELIA_CONFIG}" | sed -e 's/host: //' -e 's/\r//')
-AUTHELIA_PORT=$(grep ^port "${AUTHELIA_CONFIG}" | sed -e 's/port: //' -e 's/\r//')
+AUTHELIA_HOST=$(grep ^host "${AUTHELIA_CONFIG}" | sed -e 's/  host: //' -e 's/\r//')
+AUTHELIA_PORT=$(grep ^port "${AUTHELIA_CONFIG}" | sed -e 's/  port: //' -e 's/\r//')
 AUTHELIA_PATH=$(grep ^\ \ path "${AUTHELIA_CONFIG}" | sed -e 's/  path: //' -e 's/\r//' -e 's/^/\//')
 
 if [ -z "${AUTHELIA_SCHEME}" ]; then

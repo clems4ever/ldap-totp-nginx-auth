@@ -2,9 +2,9 @@ package schema
 
 // TOTPConfiguration represents the configuration related to TOTP options.
 type TOTPConfiguration struct {
-	Issuer string `mapstructure:"issuer"`
-	Period int    `mapstructure:"period"`
-	Skew   *int   `mapstructure:"skew"`
+	Issuer string `koanf:"issuer"`
+	Period int    `koanf:"period"`
+	Skew   *int   `koanf:"skew"`
 }
 
 var defaultOtpSkew = 1

@@ -2,60 +2,67 @@ package commands
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/simia-tech/crypt"
 	"github.com/spf13/cobra"
 
 	"github.com/authelia/authelia/internal/authentication"
 	"github.com/authelia/authelia/internal/configuration/schema"
+	"github.com/authelia/authelia/internal/logging"
 )
 
-func init() {
-	HashPasswordCmd.Flags().BoolP("sha512", "z", false, fmt.Sprintf("use sha512 as the algorithm (changes iterations to %d, change with -i)", schema.DefaultPasswordSHA512Configuration.Iterations))
-	HashPasswordCmd.Flags().IntP("iterations", "i", schema.DefaultPasswordConfiguration.Iterations, "set the number of hashing iterations")
-	HashPasswordCmd.Flags().StringP("salt", "s", "", "set the salt string")
-	HashPasswordCmd.Flags().IntP("memory", "m", schema.DefaultPasswordConfiguration.Memory, "[argon2id] set the amount of memory param (in MB)")
-	HashPasswordCmd.Flags().IntP("parallelism", "p", schema.DefaultPasswordConfiguration.Parallelism, "[argon2id] set the parallelism param")
-	HashPasswordCmd.Flags().IntP("key-length", "k", schema.DefaultPasswordConfiguration.KeyLength, "[argon2id] set the key length param")
-	HashPasswordCmd.Flags().IntP("salt-length", "l", schema.DefaultPasswordConfiguration.SaltLength, "set the auto-generated salt length")
+// NewHashPasswordCmd returns a new Hash Password Cmd.
+func NewHashPasswordCmd() (cmd *cobra.Command) {
+	cmd = &cobra.Command{
+		Use:   "hash-password [password]",
+		Short: "Hash a password to be used in file-based users database. Default algorithm is argon2id.",
+		Args:  cobra.MinimumNArgs(1),
+		Run:   cmdHashPasswordRun,
+	}
+
+	cmd.Flags().BoolP("sha512", "z", false, fmt.Sprintf("use sha512 as the algorithm (changes iterations to %d, change with -i)", schema.DefaultPasswordSHA512Configuration.Iterations))
+	cmd.Flags().IntP("iterations", "i", schema.DefaultPasswordConfiguration.Iterations, "set the number of hashing iterations")
+	cmd.Flags().StringP("salt", "s", "", "set the salt string")
+	cmd.Flags().IntP("memory", "m", schema.DefaultPasswordConfiguration.Memory, "[argon2id] set the amount of memory param (in MB)")
+	cmd.Flags().IntP("parallelism", "p", schema.DefaultPasswordConfiguration.Parallelism, "[argon2id] set the parallelism param")
+	cmd.Flags().IntP("key-length", "k", schema.DefaultPasswordConfiguration.KeyLength, "[argon2id] set the key length param")
+	cmd.Flags().IntP("salt-length", "l", schema.DefaultPasswordConfiguration.SaltLength, "set the auto-generated salt length")
+
+	return cmd
 }
 
-// HashPasswordCmd password hashing command.
-var HashPasswordCmd = &cobra.Command{
-	Use:   "hash-password [password]",
-	Short: "Hash a password to be used in file-based users database. Default algorithm is argon2id.",
-	Run: func(cobraCmd *cobra.Command, args []string) {
-		sha512, _ := cobraCmd.Flags().GetBool("sha512")
-		iterations, _ := cobraCmd.Flags().GetInt("iterations")
-		salt, _ := cobraCmd.Flags().GetString("salt")
-		keyLength, _ := cobraCmd.Flags().GetInt("key-length")
-		saltLength, _ := cobraCmd.Flags().GetInt("salt-length")
-		memory, _ := cobraCmd.Flags().GetInt("memory")
-		parallelism, _ := cobraCmd.Flags().GetInt("parallelism")
+func cmdHashPasswordRun(cmd *cobra.Command, args []string) {
+	sha512, _ := cmd.Flags().GetBool("sha512")
+	iterations, _ := cmd.Flags().GetInt("iterations")
+	salt, _ := cmd.Flags().GetString("salt")
+	keyLength, _ := cmd.Flags().GetInt("key-length")
+	saltLength, _ := cmd.Flags().GetInt("salt-length")
+	memory, _ := cmd.Flags().GetInt("memory")
+	parallelism, _ := cmd.Flags().GetInt("parallelism")
 
-		var err error
-		var hash string
-		var algorithm authentication.CryptAlgo
+	var (
+		hash      string
+		algorithm authentication.CryptAlgo
+	)
 
-		if sha512 {
-			if iterations == schema.DefaultPasswordConfiguration.Iterations {
-				iterations = schema.DefaultPasswordSHA512Configuration.Iterations
-			}
-			algorithm = authentication.HashingAlgorithmSHA512
-		} else {
-			algorithm = authentication.HashingAlgorithmArgon2id
-		}
-		if salt != "" {
-			salt = crypt.Base64Encoding.EncodeToString([]byte(salt))
+	if sha512 {
+		if iterations == schema.DefaultPasswordConfiguration.Iterations {
+			iterations = schema.DefaultPasswordSHA512Configuration.Iterations
 		}
 
-		hash, err = authentication.HashPassword(args[0], salt, algorithm, iterations, memory*1024, parallelism, keyLength, saltLength)
-		if err != nil {
-			log.Fatalf("Error occurred during hashing: %s\n", err)
-		} else {
-			fmt.Printf("Password hash: %s\n", hash)
-		}
-	},
-	Args: cobra.MinimumNArgs(1),
+		algorithm = authentication.HashingAlgorithmSHA512
+	} else {
+		algorithm = authentication.HashingAlgorithmArgon2id
+	}
+
+	if salt != "" {
+		salt = crypt.Base64Encoding.EncodeToString([]byte(salt))
+	}
+
+	hash, err := authentication.HashPassword(args[0], salt, algorithm, iterations, memory*1024, parallelism, keyLength, saltLength)
+	if err != nil {
+		logging.Logger().Fatalf("Error occurred during hashing: %v\n", err)
+	}
+
+	fmt.Printf("Password hash: %s\n", hash)
 }

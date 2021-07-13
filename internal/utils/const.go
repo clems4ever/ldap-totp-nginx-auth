@@ -43,6 +43,8 @@ const (
 	clean   = "clean"
 	tagged  = "tagged"
 	unknown = "unknown"
+
+	errFmtLinuxNotFound = "open %s: no such file or directory"
 )
 
 // ErrTimeoutReached error thrown when a timeout is reached.

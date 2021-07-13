@@ -3,13 +3,17 @@
 #                   Authelia configuration                    #
 ###############################################################
 
-host: 0.0.0.0
-port: 9091
-log:
-  level: debug
 # This secret can also be set using the env variables AUTHELIA_JWT_SECRET_FILE
 jwt_secret: a_very_important_secret
 default_redirection_url: https://public.example.com
+
+server:
+  host: 0.0.0.0
+  port: 9091
+
+log:
+  level: debug
+
 totp:
   issuer: authelia.com
 

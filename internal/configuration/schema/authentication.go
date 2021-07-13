@@ -2,45 +2,45 @@ package schema
 
 // LDAPAuthenticationBackendConfiguration represents the configuration related to LDAP server.
 type LDAPAuthenticationBackendConfiguration struct {
-	Implementation       string     `mapstructure:"implementation"`
-	URL                  string     `mapstructure:"url"`
-	BaseDN               string     `mapstructure:"base_dn"`
-	AdditionalUsersDN    string     `mapstructure:"additional_users_dn"`
-	UsersFilter          string     `mapstructure:"users_filter"`
-	AdditionalGroupsDN   string     `mapstructure:"additional_groups_dn"`
-	GroupsFilter         string     `mapstructure:"groups_filter"`
-	GroupNameAttribute   string     `mapstructure:"group_name_attribute"`
-	UsernameAttribute    string     `mapstructure:"username_attribute"`
-	MailAttribute        string     `mapstructure:"mail_attribute"`
-	DisplayNameAttribute string     `mapstructure:"display_name_attribute"`
-	User                 string     `mapstructure:"user"`
-	Password             string     `mapstructure:"password"`
-	StartTLS             bool       `mapstructure:"start_tls"`
-	TLS                  *TLSConfig `mapstructure:"tls"`
+	Implementation       string     `koanf:"implementation"`
+	URL                  string     `koanf:"url"`
+	BaseDN               string     `koanf:"base_dn"`
+	AdditionalUsersDN    string     `koanf:"additional_users_dn"`
+	UsersFilter          string     `koanf:"users_filter"`
+	AdditionalGroupsDN   string     `koanf:"additional_groups_dn"`
+	GroupsFilter         string     `koanf:"groups_filter"`
+	GroupNameAttribute   string     `koanf:"group_name_attribute"`
+	UsernameAttribute    string     `koanf:"username_attribute"`
+	MailAttribute        string     `koanf:"mail_attribute"`
+	DisplayNameAttribute string     `koanf:"display_name_attribute"`
+	User                 string     `koanf:"user"`
+	Password             string     `koanf:"password"`
+	StartTLS             bool       `koanf:"start_tls"`
+	TLS                  *TLSConfig `koanf:"tls"`
 }
 
 // FileAuthenticationBackendConfiguration represents the configuration related to file-based backend.
 type FileAuthenticationBackendConfiguration struct {
-	Path     string                 `mapstructure:"path"`
-	Password *PasswordConfiguration `mapstructure:"password"`
+	Path     string                 `koanf:"path"`
+	Password *PasswordConfiguration `koanf:"password"`
 }
 
 // PasswordConfiguration represents the configuration related to password hashing.
 type PasswordConfiguration struct {
-	Iterations  int    `mapstructure:"iterations"`
-	KeyLength   int    `mapstructure:"key_length"`
-	SaltLength  int    `mapstructure:"salt_length"`
+	Iterations  int    `koanf:"iterations"`
+	KeyLength   int    `koanf:"key_length"`
+	SaltLength  int    `koanf:"salt_length"`
 	Algorithm   string `mapstrucutre:"algorithm"`
-	Memory      int    `mapstructure:"memory"`
-	Parallelism int    `mapstructure:"parallelism"`
+	Memory      int    `koanf:"memory"`
+	Parallelism int    `koanf:"parallelism"`
 }
 
 // AuthenticationBackendConfiguration represents the configuration related to the authentication backend.
 type AuthenticationBackendConfiguration struct {
-	DisableResetPassword bool                                    `mapstructure:"disable_reset_password"`
-	RefreshInterval      string                                  `mapstructure:"refresh_interval"`
-	LDAP                 *LDAPAuthenticationBackendConfiguration `mapstructure:"ldap"`
-	File                 *FileAuthenticationBackendConfiguration `mapstructure:"file"`
+	DisableResetPassword bool                                    `koanf:"disable_reset_password"`
+	RefreshInterval      string                                  `koanf:"refresh_interval"`
+	LDAP                 *LDAPAuthenticationBackendConfiguration `koanf:"ldap"`
+	File                 *FileAuthenticationBackendConfiguration `koanf:"file"`
 }
 
 // DefaultPasswordConfiguration represents the default configuration related to Argon2id hashing.

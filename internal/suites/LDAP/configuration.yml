@@ -3,9 +3,10 @@
 #                Authelia minimal configuration               #
 ###############################################################
 
-port: 9091
-tls_cert: /config/ssl/cert.pem
-tls_key: /config/ssl/key.pem
+server:
+  port: 9091
+  tls_cert: /config/ssl/cert.pem
+  tls_key: /config/ssl/key.pem
 
 theme: dark
 

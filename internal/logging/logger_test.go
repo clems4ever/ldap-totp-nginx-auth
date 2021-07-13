@@ -9,6 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/authelia/authelia/internal/configuration/schema"
 )
 
 func TestShouldWriteLogsToFile(t *testing.T) {
@@ -20,7 +22,7 @@ func TestShouldWriteLogsToFile(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	path := fmt.Sprintf("%s/authelia.log", dir)
-	err = InitializeLogger("text", path, false)
+	err = InitializeLogger(schema.LogConfiguration{Format: "text", FilePath: path, KeepStdout: false}, false)
 	require.NoError(t, err)
 
 	Logger().Info("This is a test")
@@ -43,7 +45,7 @@ func TestShouldWriteLogsToFileAndStdout(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	path := fmt.Sprintf("%s/authelia.log", dir)
-	err = InitializeLogger("text", path, true)
+	err = InitializeLogger(schema.LogConfiguration{Format: "text", FilePath: path, KeepStdout: true}, false)
 	require.NoError(t, err)
 
 	Logger().Info("This is a test")
@@ -66,7 +68,7 @@ func TestShouldFormatLogsAsJSON(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	path := fmt.Sprintf("%s/authelia.log", dir)
-	err = InitializeLogger("json", path, false)
+	err = InitializeLogger(schema.LogConfiguration{Format: "json", FilePath: path, KeepStdout: false}, false)
 	require.NoError(t, err)
 
 	Logger().Info("This is a test")

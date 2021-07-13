@@ -4,38 +4,39 @@ import "time"
 
 // IdentityProvidersConfiguration represents the IdentityProviders 2.0 configuration for Authelia.
 type IdentityProvidersConfiguration struct {
-	OIDC *OpenIDConnectConfiguration `mapstructure:"oidc"`
+	OIDC *OpenIDConnectConfiguration `koanf:"oidc"`
 }
 
 // OpenIDConnectConfiguration configuration for OpenID Connect.
 type OpenIDConnectConfiguration struct {
 	// This secret must be 32 bytes long
-	HMACSecret       string `mapstructure:"hmac_secret"`
-	IssuerPrivateKey string `mapstructure:"issuer_private_key"`
+	HMACSecret       string `koanf:"hmac_secret"`
+	IssuerPrivateKey string `koanf:"issuer_private_key"`
 
-	AccessTokenLifespan       time.Duration `mapstructure:"access_token_lifespan"`
-	AuthorizeCodeLifespan     time.Duration `mapstructure:"authorize_code_lifespan"`
-	IDTokenLifespan           time.Duration `mapstructure:"id_token_lifespan"`
-	RefreshTokenLifespan      time.Duration `mapstructure:"refresh_token_lifespan"`
-	EnableClientDebugMessages bool          `mapstructure:"enable_client_debug_messages"`
-	MinimumParameterEntropy   int           `mapstructure:"minimum_parameter_entropy"`
+	AccessTokenLifespan   time.Duration `koanf:"access_token_lifespan"`
+	AuthorizeCodeLifespan time.Duration `koanf:"authorize_code_lifespan"`
+	IDTokenLifespan       time.Duration `koanf:"id_token_lifespan"`
+	RefreshTokenLifespan  time.Duration `koanf:"refresh_token_lifespan"`
 
-	Clients []OpenIDConnectClientConfiguration `mapstructure:"clients"`
+	EnableClientDebugMessages bool `koanf:"enable_client_debug_messages"`
+	MinimumParameterEntropy   int  `koanf:"minimum_parameter_entropy"`
+
+	Clients []OpenIDConnectClientConfiguration `koanf:"clients"`
 }
 
 // OpenIDConnectClientConfiguration configuration for an OpenID Connect client.
 type OpenIDConnectClientConfiguration struct {
-	ID            string   `mapstructure:"id"`
-	Description   string   `mapstructure:"description"`
-	Secret        string   `mapstructure:"secret"`
-	RedirectURIs  []string `mapstructure:"redirect_uris"`
-	Policy        string   `mapstructure:"authorization_policy"`
-	Scopes        []string `mapstructure:"scopes"`
-	GrantTypes    []string `mapstructure:"grant_types"`
-	ResponseTypes []string `mapstructure:"response_types"`
-	ResponseModes []string `mapstructure:"response_modes"`
+	ID            string   `koanf:"id"`
+	Description   string   `koanf:"description"`
+	Secret        string   `koanf:"secret"`
+	RedirectURIs  []string `koanf:"redirect_uris"`
+	Policy        string   `koanf:"authorization_policy"`
+	Scopes        []string `koanf:"scopes"`
+	GrantTypes    []string `koanf:"grant_types"`
+	ResponseTypes []string `koanf:"response_types"`
+	ResponseModes []string `koanf:"response_modes"`
 
-	UserinfoSigningAlgorithm string `mapstructure:"userinfo_signing_algorithm"`
+	UserinfoSigningAlgorithm string `koanf:"userinfo_signing_algorithm"`
 }
 
 // DefaultOpenIDConnectConfiguration contains defaults for OIDC.

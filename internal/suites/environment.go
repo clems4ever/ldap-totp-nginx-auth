@@ -46,7 +46,7 @@ func waitUntilAutheliaBackendIsReady(dockerEnvironment *DockerEnvironment) error
 		90*time.Second,
 		dockerEnvironment,
 		"authelia-backend",
-		[]string{"Authelia is listening for"})
+		[]string{"Listening for"})
 }
 
 func waitUntilAutheliaFrontendIsReady(dockerEnvironment *DockerEnvironment) error {

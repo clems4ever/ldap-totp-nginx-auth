@@ -10,13 +10,50 @@ has_children: true
 Authelia uses a YAML file as configuration file. A template with all possible options can be
 found [here](https://github.com/authelia/authelia/blob/master/config.template.yml), at the root of the repository.
 
+## Files
+
 When running **Authelia**, you can specify your configuration by passing the file path as shown below.
 
 ```console
 $ authelia --config config.custom.yml
 ```
 
-## Documentation
+You can have multiple configuration files which will be merged in the order specified. If duplicate keys are specified 
+the last one to be specified is the one that takes precedence. Example:
+
+```console
+$ authelia --config config.yml --config config-acl.yml --config config-other.yml
+$ authelia --config config.yml,config-acl.yml,config-other.yml
+```
+
+## Environment
+
+You may also provide the configuration by using environment variables. Environment variables are applied after the 
+configuration file meaning anything specified as part of the environment overrides the configuration files. The 
+environment variables must be prefixed with `AUTHELIA__`. Everything in the configuration can be specified as an
+environment variable as long as it's not in a list, this means ACL rules are excluded as well as things like OIDC
+clients. 
+
+**Note:** Using two underscores after `AUTHELIA` was done to reduce conflicts with certain systems which add
+environment variables automatically, for example Kubernetes will add several environment variables for every service
+definition in the same namespace as the current pod.
+
+Underscores replace indented configuration sections or subkeys. For example the following environment variables replace
+the configuration snippet that follows it:
+
+```
+AUTHELIA__LOG_LEVEL=info
+AUTHELIA__SERVER_READ_BUFFER_SIZE=4096
+```
+
+```yaml
+log:
+  level: info
+server:
+  read_buffer_size: 4096
+```
+
+# Documentation
 
 We document the configuration in two ways:
 
@@ -33,7 +70,7 @@ We document the configuration in two ways:
    - The `required` label changes color. When required it will be red, when not required it will be green, when the 
      required state depends on another configuration value it is yellow.  
 
-## Validation
+# Validation
 
 Authelia validates the configuration when it starts. This process checks multiple factors including configuration keys
 that don't exist, configuration keys that have changed, the values of the keys are valid, and that a configuration
@@ -50,7 +87,7 @@ integrations, it only checks that your configuration syntax is valid.
 $ authelia validate-config configuration.yml
 ```
 
-## Duration Notation Format
+# Duration Notation Format
 
 We have implemented a string based notation for configuration options that take a duration. This section describes its
 usage. You can use this implementation in: session for expiration, inactivity, and remember_me_duration; and regulation
@@ -74,12 +111,12 @@ Examples:
 * 1 day: 1d
 * 10 hours: 10h
 
-## TLS Configuration
+# TLS Configuration
 
 Various sections of the configuration use a uniform configuration section called TLS. Notably LDAP and SMTP.
 This section documents the usage.
 
-### Server Name
+## Server Name
 <div markdown="1">
 type: string
 {: .label .label-config .label-purple } 
@@ -92,7 +129,7 @@ required: no
 The key `server_name` overrides the name checked against the certificate in the verification process. Useful if you
 require to use a direct IP address for the address of the backend service but want to verify a specific SNI.
 
-### Skip Verify
+## Skip Verify
 <div markdown="1">
 type: boolean
 {: .label .label-config .label-purple } 
@@ -103,9 +140,10 @@ required: no
 </div>
 
 The key `skip_verify` completely negates validating the certificate of the backend service. This is not recommended,
-instead you should tweak the `server_name` option, and the global option [certificates_directory](./miscellaneous.md#certificates-directory).
+instead you should tweak the `server_name` option, and the global option 
+[certificates_directory](./miscellaneous.md#certificates_directory).
 
-### Minimum Version
+## Minimum Version
 <div markdown="1">
 type: string
 {: .label .label-config .label-purple } 

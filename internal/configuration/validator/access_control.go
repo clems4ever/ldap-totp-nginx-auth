@@ -12,7 +12,7 @@ import (
 
 // IsPolicyValid check if policy is valid.
 func IsPolicyValid(policy string) (isValid bool) {
-	return policy == denyPolicy || policy == oneFactorPolicy || policy == twoFactorPolicy || policy == bypassPolicy
+	return policy == policyDeny || policy == policyOneFactor || policy == policyTwoFactor || policy == policyBypass
 }
 
 // IsResourceValid check if a resource is valid.
@@ -52,7 +52,7 @@ func IsNetworkValid(network string) (isValid bool) {
 // ValidateAccessControl validates access control configuration.
 func ValidateAccessControl(configuration *schema.AccessControlConfiguration, validator *schema.StructValidator) {
 	if configuration.DefaultPolicy == "" {
-		configuration.DefaultPolicy = denyPolicy
+		configuration.DefaultPolicy = policyDeny
 	}
 
 	if !IsPolicyValid(configuration.DefaultPolicy) {
@@ -73,7 +73,7 @@ func ValidateAccessControl(configuration *schema.AccessControlConfiguration, val
 // ValidateRules validates an ACL Rule configuration.
 func ValidateRules(configuration schema.AccessControlConfiguration, validator *schema.StructValidator) {
 	if configuration.Rules == nil || len(configuration.Rules) == 0 {
-		if configuration.DefaultPolicy != oneFactorPolicy && configuration.DefaultPolicy != twoFactorPolicy {
+		if configuration.DefaultPolicy != policyOneFactor && configuration.DefaultPolicy != policyTwoFactor {
 			validator.Push(fmt.Errorf("Default Policy [%s] is invalid, access control rules must be provided or a policy must either be 'one_factor' or 'two_factor'", configuration.DefaultPolicy))
 
 			return
@@ -103,7 +103,7 @@ func ValidateRules(configuration schema.AccessControlConfiguration, validator *s
 
 		validateMethods(rulePosition, rule, validator)
 
-		if rule.Policy == bypassPolicy && len(rule.Subjects) != 0 {
+		if rule.Policy == policyBypass && len(rule.Subjects) != 0 {
 			validator.Push(fmt.Errorf(errAccessControlInvalidPolicyWithSubjects, rulePosition, rule.Domains, rule.Subjects))
 		}
 	}

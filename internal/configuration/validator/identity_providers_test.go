@@ -25,8 +25,8 @@ func TestShouldRaiseErrorWhenInvalidOIDCServerConfiguration(t *testing.T) {
 
 	require.Len(t, validator.Errors(), 2)
 
-	assert.EqualError(t, validator.Errors()[0], "OIDC Server issuer private key must be provided")
-	assert.EqualError(t, validator.Errors()[1], "OIDC Server has no clients defined")
+	assert.EqualError(t, validator.Errors()[0], "openid connect provider issuer private key must be provided")
+	assert.EqualError(t, validator.Errors()[1], "openid connect provider has no clients defined")
 }
 
 func TestShouldRaiseErrorWhenOIDCServerIssuerPrivateKeyPathInvalid(t *testing.T) {
@@ -42,7 +42,7 @@ func TestShouldRaiseErrorWhenOIDCServerIssuerPrivateKeyPathInvalid(t *testing.T)
 
 	require.Len(t, validator.Errors(), 1)
 
-	assert.EqualError(t, validator.Errors()[0], "OIDC Server has no clients defined")
+	assert.EqualError(t, validator.Errors()[0], "openid connect provider has no clients defined")
 }
 
 func TestShouldRaiseErrorWhenOIDCServerClientBadValues(t *testing.T) {
@@ -79,7 +79,7 @@ func TestShouldRaiseErrorWhenOIDCServerClientBadValues(t *testing.T) {
 				{
 					ID:     "client-check-uri-parse",
 					Secret: "a-secret",
-					Policy: twoFactorPolicy,
+					Policy: policyTwoFactor,
 					RedirectURIs: []string{
 						"http://abc@%two",
 					},
@@ -93,13 +93,13 @@ func TestShouldRaiseErrorWhenOIDCServerClientBadValues(t *testing.T) {
 	require.Len(t, validator.Errors(), 7)
 
 	assert.Equal(t, schema.DefaultOpenIDConnectClientConfiguration.Policy, config.OIDC.Clients[0].Policy)
-	assert.EqualError(t, validator.Errors()[0], fmt.Sprintf(errFmtOIDCServerClientInvalidSecret, ""))
-	assert.EqualError(t, validator.Errors()[1], fmt.Sprintf(errFmtOIDCServerClientRedirectURI, "", "tcp://google.com", "tcp"))
-	assert.EqualError(t, validator.Errors()[2], fmt.Sprintf(errFmtOIDCServerClientInvalidPolicy, "a-client", "a-policy"))
-	assert.EqualError(t, validator.Errors()[3], fmt.Sprintf(errFmtOIDCServerClientInvalidPolicy, "a-client", "a-policy"))
-	assert.EqualError(t, validator.Errors()[4], fmt.Sprintf(errFmtOIDCServerClientRedirectURICantBeParsed, "client-check-uri-parse", "http://abc@%two", errors.New("parse \"http://abc@%two\": invalid URL escape \"%tw\"")))
-	assert.EqualError(t, validator.Errors()[5], "OIDC Server has one or more clients with an empty ID")
-	assert.EqualError(t, validator.Errors()[6], "OIDC Server has clients with duplicate ID's")
+	assert.EqualError(t, validator.Errors()[0], fmt.Sprintf(errFmtOIDCClientInvalidSecret, ""))
+	assert.EqualError(t, validator.Errors()[1], fmt.Sprintf(errFmtOIDCClientRedirectURI, "", "tcp://google.com", "tcp"))
+	assert.EqualError(t, validator.Errors()[2], fmt.Sprintf(errFmtOIDCClientInvalidPolicy, "a-client", "a-policy"))
+	assert.EqualError(t, validator.Errors()[3], fmt.Sprintf(errFmtOIDCClientInvalidPolicy, "a-client", "a-policy"))
+	assert.EqualError(t, validator.Errors()[4], fmt.Sprintf(errFmtOIDCClientRedirectURICantBeParsed, "client-check-uri-parse", "http://abc@%two", errors.New("parse \"http://abc@%two\": invalid URL escape \"%tw\"")))
+	assert.EqualError(t, validator.Errors()[5], "openid connect provider has one or more clients with an empty ID")
+	assert.EqualError(t, validator.Errors()[6], "openid connect provider has clients with duplicate ID's")
 }
 
 func TestShouldRaiseErrorWhenOIDCClientConfiguredWithBadScopes(t *testing.T) {
@@ -125,7 +125,7 @@ func TestShouldRaiseErrorWhenOIDCClientConfiguredWithBadScopes(t *testing.T) {
 	ValidateIdentityProviders(config, validator)
 
 	require.Len(t, validator.Errors(), 1)
-	assert.EqualError(t, validator.Errors()[0], "OIDC client with ID 'good_id' has an invalid scope "+
+	assert.EqualError(t, validator.Errors()[0], "openid connect provider: client with ID 'good_id' has an invalid scope "+
 		"'bad_scope', must be one of: 'openid', 'email', 'profile', 'groups', 'offline_access'")
 }
 
@@ -152,7 +152,7 @@ func TestShouldRaiseErrorWhenOIDCClientConfiguredWithBadGrantTypes(t *testing.T)
 	ValidateIdentityProviders(config, validator)
 
 	require.Len(t, validator.Errors(), 1)
-	assert.EqualError(t, validator.Errors()[0], "OIDC client with ID 'good_id' has an invalid grant type "+
+	assert.EqualError(t, validator.Errors()[0], "openid connect provider: client with ID 'good_id' has an invalid grant type "+
 		"'bad_grant_type', must be one of: 'implicit', 'refresh_token', 'authorization_code', "+
 		"'password', 'client_credentials'")
 }
@@ -180,7 +180,7 @@ func TestShouldRaiseErrorWhenOIDCClientConfiguredWithBadResponseModes(t *testing
 	ValidateIdentityProviders(config, validator)
 
 	require.Len(t, validator.Errors(), 1)
-	assert.EqualError(t, validator.Errors()[0], "OIDC client with ID 'good_id' has an invalid response mode "+
+	assert.EqualError(t, validator.Errors()[0], "openid connect provider: client with ID 'good_id' has an invalid response mode "+
 		"'bad_responsemode', must be one of: 'form_post', 'query', 'fragment'")
 }
 
@@ -207,7 +207,7 @@ func TestShouldRaiseErrorWhenOIDCClientConfiguredWithBadUserinfoAlg(t *testing.T
 	ValidateIdentityProviders(config, validator)
 
 	require.Len(t, validator.Errors(), 1)
-	assert.EqualError(t, validator.Errors()[0], "OIDC client with ID 'good_id' has an invalid userinfo "+
+	assert.EqualError(t, validator.Errors()[0], "openid connect provider: client with ID 'good_id' has an invalid userinfo "+
 		"signing algorithm 'rs256', must be one of: 'none, RS256'")
 }
 
@@ -236,7 +236,7 @@ func TestValidateIdentityProvidersShouldRaiseWarningOnSecurityIssue(t *testing.T
 	assert.Len(t, validator.Errors(), 0)
 	require.Len(t, validator.Warnings(), 1)
 
-	assert.EqualError(t, validator.Warnings()[0], "SECURITY ISSUE: OIDC minimum parameter entropy is configured to an unsafe value, it should be above 8 but it's configured to 1.")
+	assert.EqualError(t, validator.Warnings()[0], "SECURITY ISSUE: openid connect provider: minimum parameter entropy is configured to an unsafe value, it should be above 8 but it's configured to 1.")
 }
 
 func TestValidateIdentityProvidersShouldSetDefaultValues(t *testing.T) {
@@ -257,7 +257,7 @@ func TestValidateIdentityProvidersShouldSetDefaultValues(t *testing.T) {
 					ID:                       "b-client",
 					Description:              "Normal Description",
 					Secret:                   "b-client-secret",
-					Policy:                   oneFactorPolicy,
+					Policy:                   policyOneFactor,
 					UserinfoSigningAlgorithm: "RS256",
 					RedirectURIs: []string{
 						"https://google.com",
@@ -287,11 +287,11 @@ func TestValidateIdentityProvidersShouldSetDefaultValues(t *testing.T) {
 	assert.Len(t, validator.Errors(), 0)
 
 	// Assert Clients[0] Policy is set to the default, and the default doesn't override Clients[1]'s Policy.
-	assert.Equal(t, config.OIDC.Clients[0].Policy, twoFactorPolicy)
-	assert.Equal(t, config.OIDC.Clients[1].Policy, oneFactorPolicy)
+	assert.Equal(t, policyTwoFactor, config.OIDC.Clients[0].Policy)
+	assert.Equal(t, policyOneFactor, config.OIDC.Clients[1].Policy)
 
-	assert.Equal(t, config.OIDC.Clients[0].UserinfoSigningAlgorithm, "none")
-	assert.Equal(t, config.OIDC.Clients[1].UserinfoSigningAlgorithm, "RS256")
+	assert.Equal(t, "none", config.OIDC.Clients[0].UserinfoSigningAlgorithm)
+	assert.Equal(t, "RS256", config.OIDC.Clients[1].UserinfoSigningAlgorithm)
 
 	// Assert Clients[0] Description is set to the Clients[0] ID, and Clients[1]'s Description is not overridden.
 	assert.Equal(t, config.OIDC.Clients[0].ID, config.OIDC.Clients[0].Description)

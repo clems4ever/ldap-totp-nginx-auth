@@ -10,7 +10,7 @@ import (
 	"github.com/authelia/authelia/internal/utils"
 )
 
-// ValidateAuthenticationBackend validates and update authentication backend configuration.
+// ValidateAuthenticationBackend validates and updates the authentication backend configuration.
 func ValidateAuthenticationBackend(configuration *schema.AuthenticationBackendConfiguration, validator *schema.StructValidator) {
 	if configuration.LDAP == nil && configuration.File == nil {
 		validator.Push(errors.New("Please provide `ldap` or `file` object in `authentication_backend`"))
@@ -36,7 +36,7 @@ func ValidateAuthenticationBackend(configuration *schema.AuthenticationBackendCo
 	}
 }
 
-//nolint:gocyclo // TODO: Consider refactoring/simplifying, time permitting.
+// validateFileAuthenticationBackend validates and updates the file authentication backend configuration.
 func validateFileAuthenticationBackend(configuration *schema.FileAuthenticationBackendConfiguration, validator *schema.StructValidator) {
 	if configuration.Path == "" {
 		validator.Push(errors.New("Please provide a `path` for the users database in `authentication_backend`"))
@@ -45,26 +45,6 @@ func validateFileAuthenticationBackend(configuration *schema.FileAuthenticationB
 	if configuration.Password == nil {
 		configuration.Password = &schema.DefaultPasswordConfiguration
 	} else {
-		if configuration.Password.Algorithm == "" {
-			configuration.Password.Algorithm = schema.DefaultPasswordConfiguration.Algorithm
-		} else {
-			configuration.Password.Algorithm = strings.ToLower(configuration.Password.Algorithm)
-			if configuration.Password.Algorithm != argon2id && configuration.Password.Algorithm != sha512 {
-				validator.Push(fmt.Errorf("Unknown hashing algorithm supplied, valid values are argon2id and sha512, you configured '%s'", configuration.Password.Algorithm))
-			}
-		}
-
-		// Iterations (time)
-		if configuration.Password.Iterations == 0 {
-			if configuration.Password.Algorithm == argon2id {
-				configuration.Password.Iterations = schema.DefaultPasswordConfiguration.Iterations
-			} else {
-				configuration.Password.Iterations = schema.DefaultPasswordSHA512Configuration.Iterations
-			}
-		} else if configuration.Password.Iterations < 1 {
-			validator.Push(fmt.Errorf("The number of iterations specified is invalid, must be 1 or more, you configured %d", configuration.Password.Iterations))
-		}
-
 		// Salt Length
 		switch {
 		case configuration.Password.SaltLength == 0:
@@ -73,28 +53,55 @@ func validateFileAuthenticationBackend(configuration *schema.FileAuthenticationB
 			validator.Push(fmt.Errorf("The salt length must be 2 or more, you configured %d", configuration.Password.SaltLength))
 		}
 
-		if configuration.Password.Algorithm == argon2id {
-			// Parallelism
-			if configuration.Password.Parallelism == 0 {
-				configuration.Password.Parallelism = schema.DefaultPasswordConfiguration.Parallelism
-			} else if configuration.Password.Parallelism < 1 {
-				validator.Push(fmt.Errorf("Parallelism for argon2id must be 1 or more, you configured %d", configuration.Password.Parallelism))
-			}
-
-			// Memory
-			if configuration.Password.Memory == 0 {
-				configuration.Password.Memory = schema.DefaultPasswordConfiguration.Memory
-			} else if configuration.Password.Memory < configuration.Password.Parallelism*8 {
-				validator.Push(fmt.Errorf("Memory for argon2id must be %d or more (parallelism * 8), you configured memory as %d and parallelism as %d", configuration.Password.Parallelism*8, configuration.Password.Memory, configuration.Password.Parallelism))
-			}
-
-			// Key Length
-			if configuration.Password.KeyLength == 0 {
-				configuration.Password.KeyLength = schema.DefaultPasswordConfiguration.KeyLength
-			} else if configuration.Password.KeyLength < 16 {
-				validator.Push(fmt.Errorf("Key length for argon2id must be 16, you configured %d", configuration.Password.KeyLength))
-			}
+		switch configuration.Password.Algorithm {
+		case "":
+			configuration.Password.Algorithm = schema.DefaultPasswordConfiguration.Algorithm
+			fallthrough
+		case hashArgon2id:
+			validateFileAuthenticationBackendArgon2id(configuration, validator)
+		case hashSHA512:
+			validateFileAuthenticationBackendSHA512(configuration)
+		default:
+			validator.Push(fmt.Errorf("Unknown hashing algorithm supplied, valid values are argon2id and sha512, you configured '%s'", configuration.Password.Algorithm))
 		}
+
+		if configuration.Password.Iterations < 1 {
+			validator.Push(fmt.Errorf("The number of iterations specified is invalid, must be 1 or more, you configured %d", configuration.Password.Iterations))
+		}
+	}
+}
+
+func validateFileAuthenticationBackendSHA512(configuration *schema.FileAuthenticationBackendConfiguration) {
+	// Iterations (time)
+	if configuration.Password.Iterations == 0 {
+		configuration.Password.Iterations = schema.DefaultPasswordSHA512Configuration.Iterations
+	}
+}
+func validateFileAuthenticationBackendArgon2id(configuration *schema.FileAuthenticationBackendConfiguration, validator *schema.StructValidator) {
+	// Iterations (time)
+	if configuration.Password.Iterations == 0 {
+		configuration.Password.Iterations = schema.DefaultPasswordConfiguration.Iterations
+	}
+
+	// Parallelism
+	if configuration.Password.Parallelism == 0 {
+		configuration.Password.Parallelism = schema.DefaultPasswordConfiguration.Parallelism
+	} else if configuration.Password.Parallelism < 1 {
+		validator.Push(fmt.Errorf("Parallelism for argon2id must be 1 or more, you configured %d", configuration.Password.Parallelism))
+	}
+
+	// Memory
+	if configuration.Password.Memory == 0 {
+		configuration.Password.Memory = schema.DefaultPasswordConfiguration.Memory
+	} else if configuration.Password.Memory < configuration.Password.Parallelism*8 {
+		validator.Push(fmt.Errorf("Memory for argon2id must be %d or more (parallelism * 8), you configured memory as %d and parallelism as %d", configuration.Password.Parallelism*8, configuration.Password.Memory, configuration.Password.Parallelism))
+	}
+
+	// Key Length
+	if configuration.Password.KeyLength == 0 {
+		configuration.Password.KeyLength = schema.DefaultPasswordConfiguration.KeyLength
+	} else if configuration.Password.KeyLength < 16 {
+		validator.Push(fmt.Errorf("Key length for argon2id must be 16, you configured %d", configuration.Password.KeyLength))
 	}
 }
 

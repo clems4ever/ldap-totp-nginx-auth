@@ -4,14 +4,6 @@
 #                           Authelia Configuration                            #
 ###############################################################################
 
-## The host and port to listen on.
-host: 0.0.0.0
-port: 9091
-
-## The TLS key and cert used with Authelia.
-# tls_key: /config/ssl/key.pem
-# tls_cert: /config/ssl/cert.pem
-
 ## Certificates directory specifies where Authelia will load trusted certificates (public portion) from in addition to
 ## the system certificates store.
 ## They should be in base64 format, and have one of the following extensions: *.cer, *.crt, *.pem.
@@ -24,6 +16,17 @@ theme: light
 ## Server Configuration
 ##
 server:
+
+  ## The address to listen on.
+  host: 0.0.0.0
+
+  ## The port to listen on.
+  port: 9091
+
+  ## The TLS key and cert used with Authelia.
+  # tls_key: /config/ssl/key.pem
+  # tls_cert: /config/ssl/cert.pem
+
   ## Buffers usually should be configured to be the same value.
   ## Explanation at https://www.authelia.com/docs/configuration/server.html
   ## Read buffer size adjusts the server's max incoming request size in bytes.

@@ -3,12 +3,16 @@
 #                   Authelia configuration                    #
 ###############################################################
 
-host: 0.0.0.0
-port: 9091
-log:
-  level: debug
 jwt_secret: a_very_important_secret
 default_redirection_url: https://public.example.com
+
+server:
+  host: 0.0.0.0
+  port: 9091
+
+log:
+  level: debug
+
 totp:
   issuer: authelia.com
 

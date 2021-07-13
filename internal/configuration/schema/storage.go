@@ -2,32 +2,32 @@ package schema
 
 // LocalStorageConfiguration represents the configuration when using local storage.
 type LocalStorageConfiguration struct {
-	Path string `mapstructure:"path"`
+	Path string `koanf:"path"`
 }
 
 // SQLStorageConfiguration represents the configuration of the SQL database.
 type SQLStorageConfiguration struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	Database string `mapstructure:"database"`
-	Username string `mapstructure:"username"`
-	Password string `mapstructure:"password"`
+	Host     string `koanf:"host"`
+	Port     int    `koanf:"port"`
+	Database string `koanf:"database"`
+	Username string `koanf:"username"`
+	Password string `koanf:"password"`
 }
 
 // MySQLStorageConfiguration represents the configuration of a MySQL database.
 type MySQLStorageConfiguration struct {
-	SQLStorageConfiguration `mapstructure:",squash"`
+	SQLStorageConfiguration `koanf:",squash"`
 }
 
 // PostgreSQLStorageConfiguration represents the configuration of a Postgres database.
 type PostgreSQLStorageConfiguration struct {
-	SQLStorageConfiguration `mapstructure:",squash"`
-	SSLMode                 string `mapstructure:"sslmode"`
+	SQLStorageConfiguration `koanf:",squash"`
+	SSLMode                 string `koanf:"sslmode"`
 }
 
 // StorageConfiguration represents the configuration of the storage backend.
 type StorageConfiguration struct {
-	Local      *LocalStorageConfiguration      `mapstructure:"local"`
-	MySQL      *MySQLStorageConfiguration      `mapstructure:"mysql"`
-	PostgreSQL *PostgreSQLStorageConfiguration `mapstructure:"postgres"`
+	Local      *LocalStorageConfiguration      `koanf:"local"`
+	MySQL      *MySQLStorageConfiguration      `koanf:"mysql"`
+	PostgreSQL *PostgreSQLStorageConfiguration `koanf:"postgres"`
 }

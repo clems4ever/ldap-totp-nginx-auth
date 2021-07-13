@@ -3,35 +3,38 @@ package validator
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/authelia/authelia/internal/configuration/schema"
 	"github.com/authelia/authelia/internal/utils"
 )
 
-// ValidateKeys determines if a provided key is valid.
-func ValidateKeys(validator *schema.StructValidator, keys []string) {
+// ValidateKeys determines if all provided keys are valid.
+func ValidateKeys(keys []string, prefix string, validator *schema.StructValidator) {
 	var errStrings []string
 
 	for _, key := range keys {
-		if utils.IsStringInSlice(key, validKeys) {
+		expectedKey := reKeyReplacer.ReplaceAllString(key, "[]")
+
+		if utils.IsStringInSlice(expectedKey, ValidKeys) {
 			continue
 		}
 
-		if isSecretKey(key) {
-			continue
-		}
-
-		if newKey, ok := replacedKeys[key]; ok {
+		if newKey, ok := replacedKeys[expectedKey]; ok {
 			validator.Push(fmt.Errorf(errFmtReplacedConfigurationKey, key, newKey))
 			continue
 		}
 
-		if err, ok := specificErrorKeys[key]; ok {
+		if err, ok := specificErrorKeys[expectedKey]; ok {
 			if !utils.IsStringInSlice(err, errStrings) {
 				errStrings = append(errStrings, err)
 			}
 		} else {
-			validator.Push(fmt.Errorf("config key not expected: %s", key))
+			if strings.HasPrefix(key, prefix) {
+				validator.Push(fmt.Errorf("configuration environment variable not expected: %s", key))
+			} else {
+				validator.Push(fmt.Errorf("configuration key not expected: %s", key))
+			}
 		}
 	}
 

@@ -12,16 +12,16 @@ import (
 func ValidateLogging(configuration *schema.Configuration, validator *schema.StructValidator) {
 	applyDeprecatedLoggingConfiguration(configuration, validator) // TODO: DEPRECATED LINE. Remove in 4.33.0.
 
-	if configuration.Logging.Level == "" {
-		configuration.Logging.Level = schema.DefaultLoggingConfiguration.Level
+	if configuration.Log.Level == "" {
+		configuration.Log.Level = schema.DefaultLoggingConfiguration.Level
 	}
 
-	if configuration.Logging.Format == "" {
-		configuration.Logging.Format = schema.DefaultLoggingConfiguration.Format
+	if configuration.Log.Format == "" {
+		configuration.Log.Format = schema.DefaultLoggingConfiguration.Format
 	}
 
-	if !utils.IsStringInSlice(configuration.Logging.Level, validLoggingLevels) {
-		validator.Push(fmt.Errorf(errFmtLoggingLevelInvalid, configuration.Logging.Level, strings.Join(validLoggingLevels, ", ")))
+	if !utils.IsStringInSlice(configuration.Log.Level, validLoggingLevels) {
+		validator.Push(fmt.Errorf(errFmtLoggingLevelInvalid, configuration.Log.Level, strings.Join(validLoggingLevels, ", ")))
 	}
 }
 
@@ -30,24 +30,24 @@ func applyDeprecatedLoggingConfiguration(configuration *schema.Configuration, va
 	if configuration.LogLevel != "" {
 		validator.PushWarning(fmt.Errorf(errFmtDeprecatedConfigurationKey, "log_level", "4.33.0", "log.level"))
 
-		if configuration.Logging.Level == "" {
-			configuration.Logging.Level = configuration.LogLevel
+		if configuration.Log.Level == "" {
+			configuration.Log.Level = configuration.LogLevel
 		}
 	}
 
 	if configuration.LogFormat != "" {
 		validator.PushWarning(fmt.Errorf(errFmtDeprecatedConfigurationKey, "log_format", "4.33.0", "log.format"))
 
-		if configuration.Logging.Format == "" {
-			configuration.Logging.Format = configuration.LogFormat
+		if configuration.Log.Format == "" {
+			configuration.Log.Format = configuration.LogFormat
 		}
 	}
 
 	if configuration.LogFilePath != "" {
 		validator.PushWarning(fmt.Errorf(errFmtDeprecatedConfigurationKey, "log_file_path", "4.33.0", "log.file_path"))
 
-		if configuration.Logging.FilePath == "" {
-			configuration.Logging.FilePath = configuration.LogFilePath
+		if configuration.Log.FilePath == "" {
+			configuration.Log.FilePath = configuration.LogFilePath
 		}
 	}
 }

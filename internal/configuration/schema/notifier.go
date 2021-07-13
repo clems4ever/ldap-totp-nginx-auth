@@ -2,29 +2,29 @@ package schema
 
 // FileSystemNotifierConfiguration represents the configuration of the notifier writing emails in a file.
 type FileSystemNotifierConfiguration struct {
-	Filename string `mapstructure:"filename"`
+	Filename string `koanf:"filename"`
 }
 
 // SMTPNotifierConfiguration represents the configuration of the SMTP server to send emails with.
 type SMTPNotifierConfiguration struct {
-	Host                string     `mapstructure:"host"`
-	Port                int        `mapstructure:"port"`
-	Username            string     `mapstructure:"username"`
-	Password            string     `mapstructure:"password"`
-	Identifier          string     `mapstructure:"identifier"`
-	Sender              string     `mapstructure:"sender"`
-	Subject             string     `mapstructure:"subject"`
-	StartupCheckAddress string     `mapstructure:"startup_check_address"`
-	DisableRequireTLS   bool       `mapstructure:"disable_require_tls"`
-	DisableHTMLEmails   bool       `mapstructure:"disable_html_emails"`
-	TLS                 *TLSConfig `mapstructure:"tls"`
+	Host                string     `koanf:"host"`
+	Port                int        `koanf:"port"`
+	Username            string     `koanf:"username"`
+	Password            string     `koanf:"password"`
+	Identifier          string     `koanf:"identifier"`
+	Sender              string     `koanf:"sender"`
+	Subject             string     `koanf:"subject"`
+	StartupCheckAddress string     `koanf:"startup_check_address"`
+	DisableRequireTLS   bool       `koanf:"disable_require_tls"`
+	DisableHTMLEmails   bool       `koanf:"disable_html_emails"`
+	TLS                 *TLSConfig `koanf:"tls"`
 }
 
 // NotifierConfiguration represents the configuration of the notifier to use when sending notifications to users.
 type NotifierConfiguration struct {
-	DisableStartupCheck bool                             `mapstructure:"disable_startup_check"`
-	FileSystem          *FileSystemNotifierConfiguration `mapstructure:"filesystem"`
-	SMTP                *SMTPNotifierConfiguration       `mapstructure:"smtp"`
+	DisableStartupCheck bool                             `koanf:"disable_startup_check"`
+	FileSystem          *FileSystemNotifierConfiguration `koanf:"filesystem"`
+	SMTP                *SMTPNotifierConfiguration       `koanf:"smtp"`
 }
 
 // DefaultSMTPNotifierConfiguration represents default configuration parameters for the SMTP notifier.

@@ -2,9 +2,9 @@ package schema
 
 // RegulationConfiguration represents the configuration related to regulation.
 type RegulationConfiguration struct {
-	MaxRetries int    `mapstructure:"max_retries"`
-	FindTime   string `mapstructure:"find_time"`
-	BanTime    string `mapstructure:"ban_time"`
+	MaxRetries int    `koanf:"max_retries"`
+	FindTime   string `koanf:"find_time"`
+	BanTime    string `koanf:"ban_time"`
 }
 
 // DefaultRegulationConfiguration represents default configuration parameters for the regulator.

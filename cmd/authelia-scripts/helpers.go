@@ -12,7 +12,7 @@ func getXFlags(branch, build, extra string) (flags []string, err error) {
 	if branch == "" {
 		out, _, err := utils.RunCommandAndReturnOutput("git rev-parse --abbrev-ref HEAD")
 		if err != nil {
-			return flags, err
+			return flags, fmt.Errorf("error getting branch with git rev-parse: %w", err)
 		}
 
 		if out == "" {
@@ -24,17 +24,17 @@ func getXFlags(branch, build, extra string) (flags []string, err error) {
 
 	gitTagCommit, _, err := utils.RunCommandAndReturnOutput("git rev-list --tags --max-count=1")
 	if err != nil {
-		return flags, err
+		return flags, fmt.Errorf("error getting tag commit with git rev-list: %w", err)
 	}
 
-	tag, _, err := utils.RunCommandAndReturnOutput("git describe --tags --abbrev=0 " + gitTagCommit)
+	tag, _, err := utils.RunCommandAndReturnOutput(fmt.Sprintf("git describe --tags --abbrev=0 %s", gitTagCommit))
 	if err != nil {
-		return flags, err
+		return flags, fmt.Errorf("error getting tag with git describe: %w", err)
 	}
 
 	commit, _, err := utils.RunCommandAndReturnOutput("git rev-parse HEAD")
 	if err != nil {
-		return flags, err
+		return flags, fmt.Errorf("error getting commit with git rev-parse: %w", err)
 	}
 
 	var states []string

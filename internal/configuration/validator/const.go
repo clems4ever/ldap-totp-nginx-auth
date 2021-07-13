@@ -1,55 +1,31 @@
 package validator
 
+import "regexp"
+
+// Policy constants.
 const (
-	errFmtDeprecatedConfigurationKey = "[DEPRECATED] The %s configuration option is deprecated and will be " +
-		"removed in %s, please use %s instead"
-	errFmtReplacedConfigurationKey = "invalid configuration key '%s' was replaced by '%s'"
+	policyBypass    = "bypass"
+	policyOneFactor = "one_factor"
+	policyTwoFactor = "two_factor"
+	policyDeny      = "deny"
+)
 
-	errFmtLoggingLevelInvalid = "the log level '%s' is invalid, must be one of: %s"
+// Hashing constants.
+const (
+	hashArgon2id = "argon2id"
+	hashSHA512   = "sha512"
+)
 
-	errFmtSessionSecretRedisProvider      = "The session secret must be set when using the %s session provider"
-	errFmtSessionRedisPortRange           = "The port must be between 1 and 65535 for the %s session provider"
-	errFmtSessionRedisHostRequired        = "The host must be provided when using the %s session provider"
-	errFmtSessionRedisHostOrNodesRequired = "Either the host or a node must be provided when using the %s session provider"
-
-	errFmtOIDCServerClientRedirectURI = "OIDC client with ID '%s' redirect URI %s has an invalid scheme '%s', " +
-		"should be http or https"
-	errFmtOIDCServerClientRedirectURICantBeParsed = "OIDC client with ID '%s' has an invalid redirect URI '%s' " +
-		"could not be parsed: %v"
-	errFmtOIDCServerClientInvalidPolicy = "OIDC client with ID '%s' has an invalid policy '%s', " +
-		"should be either 'one_factor' or 'two_factor'"
-	errFmtOIDCServerClientInvalidSecret = "OIDC client with ID '%s' has an empty secret" //nolint:gosec
-	errFmtOIDCServerClientInvalidScope  = "OIDC client with ID '%s' has an invalid scope '%s', " +
-		"must be one of: '%s'"
-	errFmtOIDCServerClientInvalidGrantType = "OIDC client with ID '%s' has an invalid grant type '%s', " +
-		"must be one of: '%s'"
-	errFmtOIDCServerClientInvalidResponseMode = "OIDC client with ID '%s' has an invalid response mode '%s', " +
-		"must be one of: '%s'"
-	errFmtOIDCServerClientInvalidUserinfoAlgorithm = "OIDC client with ID '%s' has an invalid userinfo signing " +
-		"algorithm '%s', must be one of: '%s'"
-	errFmtOIDCServerInsecureParameterEntropy = "SECURITY ISSUE: OIDC minimum parameter entropy is configured to an " +
-		"unsafe value, it should be above 8 but it's configured to %d."
-
-	errFileHashing = "config key incorrect: authentication_backend.file.hashing should be " +
-		"authentication_backend.file.password"
-	errFilePHashing = "config key incorrect: authentication_backend.file.password_hashing should be " +
-		"authentication_backend.file.password"
-	errFilePOptions = "config key incorrect: authentication_backend.file.password_options should be " +
-		"authentication_backend.file.password"
-
-	bypassPolicy    = "bypass"
-	oneFactorPolicy = "one_factor"
-	twoFactorPolicy = "two_factor"
-	denyPolicy      = "deny"
-
-	argon2id = "argon2id"
-	sha512   = "sha512"
-
+// Scheme constants.
+const (
 	schemeLDAP  = "ldap"
 	schemeLDAPS = "ldaps"
 	schemeHTTP  = "http"
 	schemeHTTPS = "https"
+)
 
+// Test constants.
+const (
 	testBadTimer      = "-1"
 	testInvalidPolicy = "invalid"
 	testJWTSecret     = "a_secret"
@@ -60,9 +36,46 @@ const (
 	testModeDisabled  = "disable"
 	testTLSCert       = "/tmp/cert.pem"
 	testTLSKey        = "/tmp/key.pem"
+)
 
-	errAccessControlInvalidPolicyWithSubjects = "Policy [bypass] for rule #%d domain %s with subjects %s is invalid. " +
-		"It is not supported to configure both policy bypass and subjects. For more information see: " +
+// Error constants.
+const (
+	errFmtDeprecatedConfigurationKey = "the %s configuration option is deprecated and will be " +
+		"removed in %s, please use %s instead"
+	errFmtReplacedConfigurationKey = "invalid configuration key '%s' was replaced by '%s'"
+
+	errFmtLoggingLevelInvalid = "the log level '%s' is invalid, must be one of: %s"
+
+	errFmtSessionSecretRedisProvider      = "the session secret must be set when using the %s session provider"
+	errFmtSessionRedisPortRange           = "the port must be between 1 and 65535 for the %s session provider"
+	errFmtSessionRedisHostRequired        = "the host must be provided when using the %s session provider"
+	errFmtSessionRedisHostOrNodesRequired = "either the host or a node must be provided when using the %s session provider"
+
+	errFmtOIDCClientInvalidSecret = "openid connect provider: client with ID '%s' has an empty secret"
+
+	errFmtOIDCClientRedirectURI = "openid connect provider: client with ID '%s' redirect URI %s has an " +
+		"invalid scheme %s, should be http or https"
+	errFmtOIDCClientRedirectURICantBeParsed = "openid connect provider: client with ID '%s' has an invalid redirect " +
+		"URI '%s' could not be parsed: %v"
+	errFmtOIDCClientInvalidPolicy = "openid connect provider: client with ID '%s' has an invalid policy " +
+		"'%s', should be either 'one_factor' or 'two_factor'"
+	errFmtOIDCClientInvalidScope = "openid connect provider: client with ID '%s' has an invalid scope " +
+		"'%s', must be one of: '%s'"
+	errFmtOIDCClientInvalidGrantType = "openid connect provider: client with ID '%s' has an invalid grant type " +
+		"'%s', must be one of: '%s'"
+	errFmtOIDCClientInvalidResponseMode = "openid connect provider: client with ID '%s' has an invalid response mode " +
+		"'%s', must be one of: '%s'"
+	errFmtOIDCClientInvalidUserinfoAlgorithm = "openid connect provider: client with ID '%s' has an invalid userinfo signing " +
+		"algorithm '%s', must be one of: '%s'"
+	errFmtOIDCServerInsecureParameterEntropy = "SECURITY ISSUE: openid connect provider: minimum parameter entropy is " +
+		"configured to an unsafe value, it should be above 8 but it's configured to %d."
+
+	errFileHashing  = "config key incorrect: authentication_backend.file.hashing should be authentication_backend.file.password"
+	errFilePHashing = "config key incorrect: authentication_backend.file.password_hashing should be authentication_backend.file.password"
+	errFilePOptions = "config key incorrect: authentication_backend.file.password_options should be authentication_backend.file.password"
+
+	errAccessControlInvalidPolicyWithSubjects = "policy [bypass] for rule #%d domain %s with subjects %s is invalid. It is " +
+		"not supported to configure both policy bypass and subjects. For more information see: " +
 		"https://www.authelia.com/docs/configuration/access-control.html#combining-subjects-and-the-bypass-policy"
 )
 
@@ -74,31 +87,15 @@ var validOIDCGrantTypes = []string{"implicit", "refresh_token", "authorization_c
 var validOIDCResponseModes = []string{"form_post", "query", "fragment"}
 var validOIDCUserinfoAlgorithms = []string{"none", "RS256"}
 
-// SecretNames contains a map of secret names.
-var SecretNames = map[string]string{
-	"JWTSecret":                     "jwt_secret",
-	"SessionSecret":                 "session.secret",
-	"DUOSecretKey":                  "duo_api.secret_key",
-	"RedisPassword":                 "session.redis.password",
-	"RedisSentinelPassword":         "session.redis.high_availability.sentinel_password",
-	"LDAPPassword":                  "authentication_backend.ldap.password",
-	"SMTPPassword":                  "notifier.smtp.password",
-	"MySQLPassword":                 "storage.mysql.password",
-	"PostgreSQLPassword":            "storage.postgres.password",
-	"OpenIDConnectHMACSecret":       "identity_providers.oidc.hmac_secret",
-	"OpenIDConnectIssuerPrivateKey": "identity_providers.oidc.issuer_private_key",
-}
+var reKeyReplacer = regexp.MustCompile(`\[\d+]`)
 
-// validKeys is a list of valid keys that are not secret names. For the sake of consistency please place any secret in
+// ValidKeys is a list of valid keys that are not secret names. For the sake of consistency please place any secret in
 // the secret names map and reuse it in relevant sections.
-var validKeys = []string{
+var ValidKeys = []string{
 	// Root Keys.
-	"host",
-	"port",
 	"default_redirection_url",
+	"jwt_secret",
 	"theme",
-	"tls_key",
-	"tls_cert",
 	"certificates_directory",
 
 	// Log keys.
@@ -108,12 +105,20 @@ var validKeys = []string{
 	"log.keep_stdout",
 
 	// TODO: DEPRECATED START. Remove in 4.33.0.
+	"host",
+	"port",
+	"tls_key",
+	"tls_cert",
 	"log_level",
 	"log_format",
 	"log_file_path",
 	// TODO: DEPRECATED END. Remove in 4.33.0.
 
 	// Server Keys.
+	"server.host",
+	"server.port",
+	"server.tls_cert",
+	"server.tls_key",
 	"server.read_buffer_size",
 	"server.write_buffer_size",
 	"server.path",
@@ -125,14 +130,26 @@ var validKeys = []string{
 	"totp.period",
 	"totp.skew",
 
+	// DUO API Keys.
+	"duo_api.hostname",
+	"duo_api.secret_key",
+	"duo_api.integration_key",
+
 	// Access Control Keys.
-	"access_control.rules",
 	"access_control.default_policy",
 	"access_control.networks",
+	"access_control.rules",
+	"access_control.rules[].domain",
+	"access_control.rules[].methods",
+	"access_control.rules[].networks",
+	"access_control.rules[].subject",
+	"access_control.rules[].policy",
+	"access_control.rules[].resources",
 
 	// Session Keys.
 	"session.name",
 	"session.domain",
+	"session.secret",
 	"session.same_site",
 	"session.expiration",
 	"session.inactivity",
@@ -142,6 +159,7 @@ var validKeys = []string{
 	"session.redis.host",
 	"session.redis.port",
 	"session.redis.username",
+	"session.redis.password",
 	"session.redis.database_index",
 	"session.redis.maximum_active_connections",
 	"session.redis.minimum_idle_connections",
@@ -149,6 +167,7 @@ var validKeys = []string{
 	"session.redis.tls.skip_verify",
 	"session.redis.tls.server_name",
 	"session.redis.high_availability.sentinel_name",
+	"session.redis.high_availability.sentinel_password",
 	"session.redis.high_availability.nodes",
 	"session.redis.high_availability.route_by_latency",
 	"session.redis.high_availability.route_randomly",
@@ -166,12 +185,14 @@ var validKeys = []string{
 	"storage.mysql.port",
 	"storage.mysql.database",
 	"storage.mysql.username",
+	"storage.mysql.password",
 
 	// PostgreSQL Storage Keys.
 	"storage.postgres.host",
 	"storage.postgres.port",
 	"storage.postgres.database",
 	"storage.postgres.username",
+	"storage.postgres.password",
 	"storage.postgres.sslmode",
 
 	// FileSystem Notifier Keys.
@@ -179,9 +200,10 @@ var validKeys = []string{
 	"notifier.disable_startup_check",
 
 	// SMTP Notifier Keys.
-	"notifier.smtp.username",
 	"notifier.smtp.host",
 	"notifier.smtp.port",
+	"notifier.smtp.username",
+	"notifier.smtp.password",
 	"notifier.smtp.identifier",
 	"notifier.smtp.sender",
 	"notifier.smtp.subject",
@@ -196,10 +218,6 @@ var validKeys = []string{
 	"regulation.max_retries",
 	"regulation.find_time",
 	"regulation.ban_time",
-
-	// DUO API Keys.
-	"duo_api.hostname",
-	"duo_api.integration_key",
 
 	// Authentication Backend Keys.
 	"authentication_backend.disable_reset_password",
@@ -218,6 +236,7 @@ var validKeys = []string{
 	"authentication_backend.ldap.mail_attribute",
 	"authentication_backend.ldap.display_name_attribute",
 	"authentication_backend.ldap.user",
+	"authentication_backend.ldap.password",
 	"authentication_backend.ldap.start_tls",
 	"authentication_backend.ldap.tls.minimum_version",
 	"authentication_backend.ldap.tls.skip_verify",
@@ -233,12 +252,22 @@ var validKeys = []string{
 	"authentication_backend.file.password.parallelism",
 
 	// Identity Provider Keys.
-	"identity_providers.oidc.clients",
+	"identity_providers.oidc.hmac_secret",
+	"identity_providers.oidc.issuer_private_key",
 	"identity_providers.oidc.id_token_lifespan",
 	"identity_providers.oidc.access_token_lifespan",
 	"identity_providers.oidc.refresh_token_lifespan",
 	"identity_providers.oidc.authorize_code_lifespan",
 	"identity_providers.oidc.enable_client_debug_messages",
+	"identity_providers.oidc.clients",
+	"identity_providers.oidc.clients[].id",
+	"identity_providers.oidc.clients[].description",
+	"identity_providers.oidc.clients[].secret",
+	"identity_providers.oidc.clients[].redirect_uris",
+	"identity_providers.oidc.clients[].authorization_policy",
+	"identity_providers.oidc.clients[].scopes",
+	"identity_providers.oidc.clients[].grant_types",
+	"identity_providers.oidc.clients[].response_types",
 }
 
 var replacedKeys = map[string]string{

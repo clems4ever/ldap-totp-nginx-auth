@@ -18,7 +18,7 @@ type AccessControl struct {
 
 func (suite *AccessControl) SetupTest() {
 	suite.validator = schema.NewStructValidator()
-	suite.configuration.DefaultPolicy = denyPolicy
+	suite.configuration.DefaultPolicy = policyDeny
 	suite.configuration.Networks = schema.DefaultACLNetwork
 	suite.configuration.Rules = schema.DefaultACLRule
 }
@@ -71,7 +71,7 @@ func (suite *AccessControl) TestShouldRaiseErrorWithNoRulesDefined() {
 func (suite *AccessControl) TestShouldRaiseWarningWithNoRulesDefined() {
 	suite.configuration.Rules = []schema.ACLRule{}
 
-	suite.configuration.DefaultPolicy = twoFactorPolicy
+	suite.configuration.DefaultPolicy = policyTwoFactor
 
 	ValidateRules(suite.configuration, suite.validator)
 

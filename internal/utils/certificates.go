@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/authelia/authelia/internal/configuration/schema"
@@ -48,7 +48,7 @@ func NewX509CertPool(directory string) (certPool *x509.CertPool, errors []error,
 				nameLower := strings.ToLower(certFileInfo.Name())
 
 				if !certFileInfo.IsDir() && (strings.HasSuffix(nameLower, ".cer") || strings.HasSuffix(nameLower, ".crt") || strings.HasSuffix(nameLower, ".pem")) {
-					certPath := path.Join(directory, certFileInfo.Name())
+					certPath := filepath.Join(directory, certFileInfo.Name())
 
 					logger.Tracef("Found possible cert %s, attempting to add it to the pool", certPath)
 

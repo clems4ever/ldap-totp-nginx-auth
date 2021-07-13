@@ -46,6 +46,17 @@ func IsStringInSlice(needle string, haystack []string) (inSlice bool) {
 	return false
 }
 
+// IsStringInSliceSuffix checks if the needle string has one of the suffixes in the haystack.
+func IsStringInSliceSuffix(needle string, haystack []string) (hasSuffix bool) {
+	for _, straw := range haystack {
+		if strings.HasSuffix(needle, straw) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // IsStringInSliceFold checks if a single string is in a slice of strings but uses strings.EqualFold to compare them.
 func IsStringInSliceFold(needle string, haystack []string) (inSlice bool) {
 	for _, b := range haystack {

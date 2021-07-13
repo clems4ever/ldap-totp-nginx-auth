@@ -6,45 +6,44 @@ import (
 
 	logrus_stack "github.com/Gurpartap/logrus-stack"
 	"github.com/sirupsen/logrus"
+
+	"github.com/authelia/authelia/internal/configuration/schema"
 )
 
-// Logger return the standard logrus logger.
+// Logger returns the standard logrus logger.
 func Logger() *logrus.Logger {
 	return logrus.StandardLogger()
 }
 
-// SetLevel set the level of the logger.
-func SetLevel(level logrus.Level) {
-	logrus.SetLevel(level)
-}
+// InitializeLogger configures the default loggers stack levels, formatting, and the output destinations.
+func InitializeLogger(config schema.LogConfiguration, log bool) error {
+	setLevelStr(config.Level, log)
 
-// InitializeLogger initialize logger.
-func InitializeLogger(format, filename string, stdout bool) error {
 	callerLevels := []logrus.Level{}
 	stackLevels := []logrus.Level{logrus.PanicLevel, logrus.FatalLevel, logrus.ErrorLevel}
 	logrus.AddHook(logrus_stack.NewHook(callerLevels, stackLevels))
 
-	if format == logFormatJSON {
+	if config.Format == logFormatJSON {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 	}
 
-	if filename != "" {
-		f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if config.FilePath != "" {
+		f, err := os.OpenFile(config.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 
 		if err != nil {
 			return err
 		}
 
-		if format != logFormatJSON {
+		if config.Format != logFormatJSON {
 			logrus.SetFormatter(&logrus.TextFormatter{
 				DisableColors: true,
 				FullTimestamp: true,
 			})
 		}
 
-		if stdout {
+		if config.KeepStdout {
 			logLocations := io.MultiWriter(os.Stdout, f)
 			logrus.SetOutput(logLocations)
 		} else {
@@ -53,4 +52,27 @@ func InitializeLogger(format, filename string, stdout bool) error {
 	}
 
 	return nil
+}
+
+func setLevelStr(level string, log bool) {
+	switch level {
+	case "error":
+		logrus.SetLevel(logrus.ErrorLevel)
+	case "warn":
+		logrus.SetLevel(logrus.WarnLevel)
+	case "info":
+		logrus.SetLevel(logrus.InfoLevel)
+	case "debug":
+		logrus.SetLevel(logrus.DebugLevel)
+	case "trace":
+		logrus.SetLevel(logrus.TraceLevel)
+	default:
+		level = "info (default)"
+
+		logrus.SetLevel(logrus.InfoLevel)
+	}
+
+	if log {
+		logrus.Infof("Log severity set to %s", level)
+	}
 }

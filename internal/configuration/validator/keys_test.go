@@ -12,25 +12,39 @@ import (
 )
 
 func TestShouldValidateGoodKeys(t *testing.T) {
-	configKeys := validKeys
+	configKeys := ValidKeys
 	val := schema.NewStructValidator()
-	ValidateKeys(val, configKeys)
+	ValidateKeys(configKeys, "AUTHELIA_", val)
 
 	require.Len(t, val.Errors(), 0)
 }
 
 func TestShouldNotValidateBadKeys(t *testing.T) {
-	configKeys := validKeys
+	configKeys := ValidKeys
 	configKeys = append(configKeys, "bad_key")
 	configKeys = append(configKeys, "totp.skewy")
 	val := schema.NewStructValidator()
-	ValidateKeys(val, configKeys)
+	ValidateKeys(configKeys, "AUTHELIA_", val)
 
 	errs := val.Errors()
 	require.Len(t, errs, 2)
 
-	assert.EqualError(t, errs[0], "config key not expected: bad_key")
-	assert.EqualError(t, errs[1], "config key not expected: totp.skewy")
+	assert.EqualError(t, errs[0], "configuration key not expected: bad_key")
+	assert.EqualError(t, errs[1], "configuration key not expected: totp.skewy")
+}
+
+func TestShouldNotValidateBadEnvKeys(t *testing.T) {
+	configKeys := ValidKeys
+	configKeys = append(configKeys, "AUTHELIA__BAD_ENV_KEY")
+	configKeys = append(configKeys, "AUTHELIA_BAD_ENV_KEY")
+	val := schema.NewStructValidator()
+	ValidateKeys(configKeys, "AUTHELIA_", val)
+
+	errs := val.Errors()
+	require.Len(t, errs, 2)
+
+	assert.EqualError(t, errs[0], "configuration environment variable not expected: AUTHELIA__BAD_ENV_KEY")
+	assert.EqualError(t, errs[1], "configuration environment variable not expected: AUTHELIA_BAD_ENV_KEY")
 }
 
 func TestAllSpecificErrorKeys(t *testing.T) {
@@ -48,7 +62,7 @@ func TestAllSpecificErrorKeys(t *testing.T) {
 	}
 
 	val := schema.NewStructValidator()
-	ValidateKeys(val, configKeys)
+	ValidateKeys(configKeys, "AUTHELIA_", val)
 
 	errs := val.Errors()
 
@@ -72,7 +86,7 @@ func TestSpecificErrorKeys(t *testing.T) {
 	}
 
 	val := schema.NewStructValidator()
-	ValidateKeys(val, configKeys)
+	ValidateKeys(configKeys, "AUTHELIA_", val)
 
 	errs := val.Errors()
 
@@ -95,7 +109,7 @@ func TestReplacedErrors(t *testing.T) {
 	}
 
 	val := schema.NewStructValidator()
-	ValidateKeys(val, configKeys)
+	ValidateKeys(configKeys, "AUTHELIA_", val)
 
 	warns := val.Warnings()
 	errs := val.Errors()
@@ -108,19 +122,4 @@ func TestReplacedErrors(t *testing.T) {
 	assert.EqualError(t, errs[2], fmt.Sprintf(errFmtReplacedConfigurationKey, "notifier.smtp.disable_verify_cert", "notifier.smtp.tls.skip_verify"))
 	assert.EqualError(t, errs[3], fmt.Sprintf(errFmtReplacedConfigurationKey, "logs_file_path", "log.file_path"))
 	assert.EqualError(t, errs[4], fmt.Sprintf(errFmtReplacedConfigurationKey, "logs_level", "log.level"))
-}
-
-func TestSecretKeysDontRaiseErrors(t *testing.T) {
-	configKeys := []string{}
-
-	for _, key := range SecretNames {
-		configKeys = append(configKeys, SecretNameToEnvName(key))
-		configKeys = append(configKeys, key)
-	}
-
-	val := schema.NewStructValidator()
-	ValidateKeys(val, configKeys)
-
-	assert.Len(t, val.Warnings(), 0)
-	assert.Len(t, val.Errors(), 0)
 }
