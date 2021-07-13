@@ -5,49 +5,77 @@
 package mocks
 
 import (
+	duo "github.com/authelia/authelia/internal/duo"
+	middlewares "github.com/authelia/authelia/internal/middlewares"
+	gomock "github.com/golang/mock/gomock"
 	url "net/url"
 	reflect "reflect"
-
-	gomock "github.com/golang/mock/gomock"
-
-	duo "github.com/authelia/authelia/internal/duo"
-	"github.com/authelia/authelia/internal/middlewares"
 )
 
-// MockAPI is a mock of API interface.
+// MockAPI is a mock of API interface
 type MockAPI struct {
 	ctrl     *gomock.Controller
 	recorder *MockAPIMockRecorder
 }
 
-// MockAPIMockRecorder is the mock recorder for MockAPI.
+// MockAPIMockRecorder is the mock recorder for MockAPI
 type MockAPIMockRecorder struct {
 	mock *MockAPI
 }
 
-// NewMockAPI creates a new mock instance.
+// NewMockAPI creates a new mock instance
 func NewMockAPI(ctrl *gomock.Controller) *MockAPI {
 	mock := &MockAPI{ctrl: ctrl}
 	mock.recorder = &MockAPIMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use.
+// EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
-// Call mocks base method.
-func (m *MockAPI) Call(arg0 url.Values, arg1 *middlewares.AutheliaCtx) (*duo.Response, error) {
+// AuthCall mocks base method
+func (m *MockAPI) AuthCall(arg0 url.Values, arg1 *middlewares.AutheliaCtx) (*duo.AuthResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Call", arg0, arg1)
+	ret := m.ctrl.Call(m, "AuthCall", arg0, arg1)
+	ret0, _ := ret[0].(*duo.AuthResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthCall indicates an expected call of AuthCall
+func (mr *MockAPIMockRecorder) AuthCall(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthCall", reflect.TypeOf((*MockAPI)(nil).AuthCall), arg0, arg1)
+}
+
+// Call mocks base method
+func (m *MockAPI) Call(arg0 url.Values, arg1 *middlewares.AutheliaCtx, arg2, arg3 string) (*duo.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Call", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(*duo.Response)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Call indicates an expected call of Call.
-func (mr *MockAPIMockRecorder) Call(arg0, arg1 interface{}) *gomock.Call {
+// Call indicates an expected call of Call
+func (mr *MockAPIMockRecorder) Call(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Call", reflect.TypeOf((*MockAPI)(nil).Call), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Call", reflect.TypeOf((*MockAPI)(nil).Call), arg0, arg1, arg2, arg3)
+}
+
+// PreauthCall mocks base method
+func (m *MockAPI) PreauthCall(arg0 url.Values, arg1 *middlewares.AutheliaCtx) (*duo.PreauthResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PreauthCall", arg0, arg1)
+	ret0, _ := ret[0].(*duo.PreauthResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PreauthCall indicates an expected call of PreauthCall
+func (mr *MockAPIMockRecorder) PreauthCall(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PreauthCall", reflect.TypeOf((*MockAPI)(nil).PreauthCall), arg0, arg1)
 }

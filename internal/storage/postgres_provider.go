@@ -38,6 +38,9 @@ func NewPostgreSQLProvider(configuration schema.PostgreSQLStorageConfiguration) 
 			sqlGetU2FDeviceHandleByUsername: fmt.Sprintf("SELECT keyHandle, publicKey FROM %s WHERE username=$1", u2fDeviceHandlesTableName),
 			sqlUpsertU2FDeviceHandle:        fmt.Sprintf("INSERT INTO %s (username, keyHandle, publicKey) VALUES ($1, $2, $3) ON CONFLICT (username) DO UPDATE SET keyHandle=$2, publicKey=$3", u2fDeviceHandlesTableName),
 
+			sqlGetDuoDeviceByUsername: fmt.Sprintf("SELECT device, method FROM %s WHERE username=$1", duoDevicesTableName),
+			sqlUpsertDuoDevice:        fmt.Sprintf("INSERT INTO %s (username, device, method) VALUES ($1, $2, $3) ON CONFLICT (username) DO UPDATE SET device=$2, method=$3", duoDevicesTableName),
+
 			sqlInsertAuthenticationLog:     fmt.Sprintf("INSERT INTO %s (username, successful, time) VALUES ($1, $2, $3)", authenticationLogsTableName),
 			sqlGetLatestAuthenticationLogs: fmt.Sprintf("SELECT successful, time FROM %s WHERE time>$1 AND username=$2 ORDER BY time DESC", authenticationLogsTableName),
 

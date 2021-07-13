@@ -74,3 +74,20 @@ func (p *SQLProvider) upgradeSchemaToVersion001(tx transaction, tables []string)
 
 	return nil
 }
+
+// upgradeSchemaToVersion002 upgrades the schema to version 2.
+func (p *SQLProvider) upgradeSchemaToVersion002(tx transaction, tables []string) error {
+	version := SchemaVersion(2)
+
+	err := p.upgradeCreateTableStatements(tx, p.sqlUpgradesCreateTableStatements[version], tables)
+	if err != nil {
+		return err
+	}
+
+	err = p.upgradeFinalize(tx, version)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

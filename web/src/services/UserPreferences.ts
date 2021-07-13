@@ -10,6 +10,7 @@ export interface UserInfoPayload {
     method: Method2FA;
     has_u2f: boolean;
     has_totp: boolean;
+    has_duo: boolean;
 }
 
 export interface MethodPreferencePayload {

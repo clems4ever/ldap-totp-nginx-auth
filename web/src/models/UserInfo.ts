@@ -5,4 +5,5 @@ export interface UserInfo {
     method: SecondFactorMethod;
     has_u2f: boolean;
     has_totp: boolean;
+    has_duo: boolean;
 }

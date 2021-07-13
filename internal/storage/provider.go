@@ -23,6 +23,9 @@ type Provider interface {
 	SaveU2FDeviceHandle(username string, keyHandle []byte, publicKey []byte) error
 	LoadU2FDeviceHandle(username string) (keyHandle []byte, publicKey []byte, err error)
 
+	SavePreferredDuoDevice(username string, device string, method string) error
+	LoadPreferredDuoDevice(username string) (string, string, error)
+
 	AppendAuthenticationLog(attempt models.AuthenticationAttempt) error
 	LoadLatestAuthenticationLogs(username string, fromDate time.Time) ([]models.AuthenticationAttempt, error)
 }

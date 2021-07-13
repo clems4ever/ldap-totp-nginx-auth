@@ -41,6 +41,7 @@ option.
 
 You should now receive a notification on your mobile phone with all the details
 about the authentication request.
+In case you have multiple devices available, you will be asked to select your preferred device.
 
 
 ## Limitation

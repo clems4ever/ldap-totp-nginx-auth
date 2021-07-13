@@ -32,7 +32,7 @@ export interface Props {
     userInfo: UserInfo;
     configuration: Configuration;
 
-    onMethodChanged: (method: SecondFactorMethod) => void;
+    onMethodChanged: () => void;
     onAuthenticationSuccess: (redirectURL: string | undefined) => void;
 }
 
@@ -77,7 +77,7 @@ const SecondFactorForm = function (props: Props) {
         try {
             await setPreferred2FAMethod(method);
             setMethodSelectionOpen(false);
-            props.onMethodChanged(method);
+            props.onMethodChanged();
         } catch (err) {
             console.error(err);
             createErrorNotification("There was an issue updating preferred second factor method");
@@ -136,6 +136,8 @@ const SecondFactorForm = function (props: Props) {
                             <PushNotificationMethod
                                 id="push-notification-method"
                                 authenticationLevel={props.authenticationLevel}
+                                selected={props.userInfo.has_duo}
+                                onSelectionClick={props.onMethodChanged}
                                 onSignInError={(err) => createErrorNotification(err.message)}
                                 onSignInSuccess={props.onAuthenticationSuccess}
                             />

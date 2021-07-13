@@ -16,7 +16,7 @@ import (
 func loadInfo(username string, storageProvider storage.Provider, userInfo *UserInfo, logger *logrus.Entry) []error {
 	var wg sync.WaitGroup
 
-	wg.Add(3)
+	wg.Add(4)
 
 	errors := make([]error, 0)
 
@@ -72,6 +72,24 @@ func loadInfo(username string, storageProvider storage.Provider, userInfo *UserI
 		}
 
 		userInfo.HasTOTP = true
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		_, _, err := storageProvider.LoadPreferredDuoDevice(username)
+		if err != nil {
+			if err == storage.ErrNoDuoDevice {
+				return
+			}
+
+			errors = append(errors, err)
+			logger.Error(err)
+
+			return
+		}
+
+		userInfo.HasDuo = true
 	}()
 
 	wg.Wait()

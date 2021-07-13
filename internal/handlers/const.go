@@ -61,6 +61,14 @@ const movingAverageWindow = 10
 const msMinimumDelay1FA = float64(250)
 const msMaximumRandomDelay = int64(85)
 
+// Duo constants.
+const (
+	allow  = "allow"
+	deny   = "deny"
+	enroll = "enroll"
+	auth   = "auth"
+)
+
 // OIDC constants.
 const (
 	oidcJWKsPath       = "/api/oidc/jwks"

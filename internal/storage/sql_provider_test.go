@@ -16,7 +16,7 @@ import (
 	"github.com/authelia/authelia/internal/models"
 )
 
-const currentSchemaMockSchemaVersion = "1"
+const currentSchemaMockSchemaVersion = "2"
 
 func TestSQLInitializeDatabase(t *testing.T) {
 	provider, mock := NewSQLMockProvider()
@@ -48,6 +48,24 @@ func TestSQLInitializeDatabase(t *testing.T) {
 	mock.ExpectExec(
 		fmt.Sprintf("REPLACE INTO %s \\(category, key_name, value\\) VALUES \\(\\?, \\?, \\?\\)", configTableName)).
 		WithArgs("schema", "version", "1").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	keys = make([]string, 0, len(sqlUpgradeCreateTableStatements[2]))
+	for k := range sqlUpgradeCreateTableStatements[2] {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	for _, table := range keys {
+		mock.ExpectExec(
+			fmt.Sprintf("CREATE TABLE %s .*", table)).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+	}
+
+	mock.ExpectExec(
+		fmt.Sprintf("REPLACE INTO %s \\(category, key_name, value\\) VALUES \\(\\?, \\?, \\?\\)", configTableName)).
+		WithArgs("schema", "version", "2").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	mock.ExpectCommit()
@@ -83,6 +101,15 @@ func TestSQLUpgradeDatabase(t *testing.T) {
 		WithArgs("schema", "version", "1").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
+	mock.ExpectExec(
+		fmt.Sprintf("CREATE TABLE %s .*", duoDevicesTableName)).
+		WillReturnResult(sqlmock.NewResult(0, 0))
+
+	mock.ExpectExec(
+		fmt.Sprintf("REPLACE INTO %s \\(category, key_name, value\\) VALUES \\(\\?, \\?, \\?\\)", configTableName)).
+		WithArgs("schema", "version", "2").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
 	mock.ExpectCommit()
 
 	err := provider.initialize(provider.db)
@@ -107,7 +134,7 @@ func TestSQLProviderMethodsAuthenticationLogs(t *testing.T) {
 		fmt.Sprintf("SELECT value FROM %s WHERE category=\\? AND key_name=\\?", configTableName)).
 		WithArgs(args...).
 		WillReturnRows(sqlmock.NewRows([]string{"value"}).
-			AddRow("1"))
+			AddRow("2"))
 
 	err := provider.initialize(provider.db)
 	assert.NoError(t, err)

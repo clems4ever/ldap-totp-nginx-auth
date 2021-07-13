@@ -64,6 +64,20 @@ func setPreferencesExpectations(preferences UserInfo, provider *storage.MockProv
 			LoadTOTPSecret(gomock.Eq("john")).
 			Return("", storage.ErrNoTOTPSecret)
 	}
+
+	if preferences.HasDuo {
+		device := "5JCW25UW4YZ6B12DVFLA"
+		method := "push"
+		provider.
+			EXPECT().
+			LoadPreferredDuoDevice(gomock.Eq("john")).
+			Return(device, method, nil)
+	} else {
+		provider.
+			EXPECT().
+			LoadPreferredDuoDevice(gomock.Eq("john")).
+			Return("", "", storage.ErrNoDuoDevice)
+	}
 }
 
 func TestMethodSetToU2F(t *testing.T) {
@@ -75,16 +89,19 @@ func TestMethodSetToU2F(t *testing.T) {
 			Method:  "u2f",
 			HasU2F:  true,
 			HasTOTP: true,
+			HasDuo:  false,
 		},
 		{
 			Method:  "u2f",
 			HasU2F:  true,
 			HasTOTP: false,
+			HasDuo:  false,
 		},
 		{
 			Method:  "mobile_push",
 			HasU2F:  false,
 			HasTOTP: false,
+			HasDuo:  true,
 		},
 	}
 
@@ -114,6 +131,10 @@ func TestMethodSetToU2F(t *testing.T) {
 		t.Run("registered totp", func(t *testing.T) {
 			assert.Equal(t, expectedPreferences.HasTOTP, actualPreferences.HasTOTP)
 		})
+
+		t.Run("registered duo", func(t *testing.T) {
+			assert.Equal(t, expectedPreferences.HasDuo, actualPreferences.HasDuo)
+		})
 		mock.Close()
 	}
 }
@@ -134,6 +155,11 @@ func (s *FetchSuite) TestShouldGetDefaultPreferenceIfNotInDB() {
 		LoadTOTPSecret(gomock.Eq("john")).
 		Return("", storage.ErrNoTOTPSecret)
 
+	s.mock.StorageProviderMock.
+		EXPECT().
+		LoadPreferredDuoDevice(gomock.Eq("john")).
+		Return("", "", storage.ErrNoDuoDevice)
+
 	UserInfoGet(s.mock.Ctx)
 	s.mock.Assert200OK(s.T(), UserInfo{Method: "totp"})
 }
@@ -150,6 +176,10 @@ func (s *FetchSuite) TestShouldReturnError500WhenStorageFailsToLoad() {
 	s.mock.StorageProviderMock.
 		EXPECT().
 		LoadTOTPSecret(gomock.Eq("john"))
+
+	s.mock.StorageProviderMock.
+		EXPECT().
+		LoadPreferredDuoDevice(gomock.Eq("john"))
 
 	UserInfoGet(s.mock.Ctx)
 
