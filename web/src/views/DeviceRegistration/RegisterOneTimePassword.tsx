@@ -56,6 +56,7 @@ const RegisterOneTimePassword = function () {
     useEffect(() => {
         completeRegistrationProcess();
     }, [completeRegistrationProcess]);
+
     function SecretButton(text: string | undefined, action: string, icon: IconDefinition) {
         return (
             <IconButton

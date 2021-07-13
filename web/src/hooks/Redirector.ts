@@ -1,5 +1,7 @@
+import { useCallback } from "react";
+
 export function useRedirector() {
-    return (url: string) => {
+    return useCallback((url: string) => {
         window.location.href = url;
-    };
+    }, []);
 }

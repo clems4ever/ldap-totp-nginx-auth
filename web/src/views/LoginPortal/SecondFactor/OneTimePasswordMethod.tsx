@@ -38,7 +38,7 @@ const OneTimePasswordMethod = function (props: Props) {
     /* eslint-enable react-hooks/exhaustive-deps */
 
     const signInFunc = useCallback(async () => {
-        if (props.authenticationLevel === AuthenticationLevel.TwoFactor) {
+        if (!props.registered || props.authenticationLevel === AuthenticationLevel.TwoFactor) {
             return;
         }
 
@@ -59,7 +59,14 @@ const OneTimePasswordMethod = function (props: Props) {
             setState(State.Failure);
         }
         setPasscode("");
-    }, [passcode, onSignInErrorCallback, onSignInSuccessCallback, redirectionURL, props.authenticationLevel]);
+    }, [
+        passcode,
+        onSignInErrorCallback,
+        onSignInSuccessCallback,
+        redirectionURL,
+        props.authenticationLevel,
+        props.registered,
+    ]);
 
     // Set successful state if user is already authenticated.
     useEffect(() => {

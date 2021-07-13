@@ -181,6 +181,37 @@ paths:
           description: Unauthorized
       security:
         - authelia_auth: []
+  /api/checks/safe-redirection:
+    post:
+      tags:
+        - Authentication
+      summary: Check whether URI is safe to redirect to.
+      description: >
+        End users usually needs to be redirected to a target website after authentication. This endpoint aims to check
+        if target URL is safe to redirect to. This prevents open redirect attacks.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/handlers.checkURIWithinDomainRequestBody'
+      responses:
+        "200":
+          description: Successful Operation
+          headers:
+            Set-Cookie:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                example: authelia_session=kTTCSLupEUirZVfLeZTijezewFQnNOgs; Path=/
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/handlers.checkURIWithinDomainResponseBody'
+        "401":
+          description: Unauthorized
+      security:
+        - authelia_auth: []
   /api/logout:
     post:
       tags:

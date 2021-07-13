@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 )
 
-// IsRedirectionSafe determines if a redirection URL is secured.
+// IsRedirectionSafe determines whether the URL is safe to be redirected to.
 func IsRedirectionSafe(url url.URL, protectedDomain string) bool {
 	if url.Scheme != "https" {
 		return false
@@ -16,4 +17,15 @@ func IsRedirectionSafe(url url.URL, protectedDomain string) bool {
 	}
 
 	return true
+}
+
+// IsRedirectionURISafe determines whether the URI is safe to be redirected to.
+func IsRedirectionURISafe(uri, protectedDomain string) (bool, error) {
+	targetURL, err := url.ParseRequestURI(uri)
+
+	if err != nil {
+		return false, fmt.Errorf("Unable to parse redirection URI %s: %w", uri, err)
+	}
+
+	return targetURL != nil && IsRedirectionSafe(*targetURL, protectedDomain), nil
 }

@@ -127,10 +127,26 @@ func NewMockAutheliaCtx(t *testing.T) *MockAutheliaCtx {
 	return mockAuthelia
 }
 
+// NewMockAutheliaCtxWithUserSession create an instance of AutheliaCtx mock with predefined user session.
+func NewMockAutheliaCtxWithUserSession(t *testing.T, userSession session.UserSession) *MockAutheliaCtx {
+	mock := NewMockAutheliaCtx(t)
+	err := mock.Ctx.SaveSession(userSession)
+	require.NoError(t, err)
+
+	return mock
+}
+
 // Close close the mock.
 func (m *MockAutheliaCtx) Close() {
 	m.Hook.Reset()
 	m.Ctrl.Finish()
+}
+
+// SetRequestBody set the request body from a struct with json tags.
+func (m *MockAutheliaCtx) SetRequestBody(t *testing.T, body interface{}) {
+	bodyBytes, err := json.Marshal(body)
+	require.NoError(t, err)
+	m.Ctx.Request.SetBody(bodyBytes)
 }
 
 // Assert401KO assert an error response from the service.

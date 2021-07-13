@@ -62,6 +62,8 @@ func registerRoutes(configuration schema.Configuration, providers middlewares.Pr
 	r.GET("/api/verify", autheliaMiddleware(handlers.VerifyGet(configuration.AuthenticationBackend)))
 	r.HEAD("/api/verify", autheliaMiddleware(handlers.VerifyGet(configuration.AuthenticationBackend)))
 
+	r.POST("/api/checks/safe-redirection", autheliaMiddleware(handlers.CheckSafeRedirection))
+
 	r.POST("/api/firstfactor", autheliaMiddleware(handlers.FirstFactorPost(1000, true)))
 	r.POST("/api/logout", autheliaMiddleware(handlers.LogoutPost))
 

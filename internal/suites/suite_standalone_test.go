@@ -66,6 +66,36 @@ func (s *StandaloneWebDriverSuite) TestShouldLetUserKnowHeIsAlreadyAuthenticated
 	s.verifyIsAuthenticatedPage(ctx, s.T())
 }
 
+func (s *StandaloneWebDriverSuite) TestShouldRedirectAlreadyAuthenticatedUser() {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_ = s.doRegisterAndLogin2FA(ctx, s.T(), "john", "password", false, "")
+
+	// Visit home page to change context.
+	s.doVisit(s.T(), HomeBaseURL)
+	s.verifyIsHome(ctx, s.T())
+
+	// Visit the login page and wait for redirection to 2FA page with success icon displayed.
+	s.doVisit(s.T(), fmt.Sprintf("%s?rd=https://secure.example.com:8080", GetLoginBaseURL()))
+	s.verifyURLIs(ctx, s.T(), "https://secure.example.com:8080/")
+}
+
+func (s *StandaloneWebDriverSuite) TestShouldNotRedirectAlreadyAuthenticatedUserToUnsafeURL() {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	_ = s.doRegisterAndLogin2FA(ctx, s.T(), "john", "password", false, "")
+
+	// Visit home page to change context.
+	s.doVisit(s.T(), HomeBaseURL)
+	s.verifyIsHome(ctx, s.T())
+
+	// Visit the login page and wait for redirection to 2FA page with success icon displayed.
+	s.doVisit(s.T(), fmt.Sprintf("%s?rd=https://secure.example.local:8080", GetLoginBaseURL()))
+	s.verifyNotificationDisplayed(ctx, s.T(), "There was an issue redirecting the user. Check that the redirection URI matches the domain.")
+}
+
 func (s *StandaloneWebDriverSuite) TestShouldCheckUserIsAskedToRegisterDevice() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()

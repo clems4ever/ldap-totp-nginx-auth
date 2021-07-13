@@ -2,6 +2,7 @@ package suites
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"testing"
 	"time"
@@ -69,10 +70,33 @@ func (s *OneFactorOnlyWebSuite) TestShouldDisplayAuthenticatedView() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	s.doLoginOneFactor(ctx, s.T(), "john", "password", false, "http://unsafe.local")
+	s.doLoginOneFactor(ctx, s.T(), "john", "password", false, "")
 	s.verifyURLIs(ctx, s.T(), HomeBaseURL+"/")
 	s.doVisit(s.T(), GetLoginBaseURL())
 	s.verifyIsAuthenticatedPage(ctx, s.T())
+}
+
+func (s *OneFactorOnlyWebSuite) TestShouldRedirectAlreadyAuthenticatedUser() {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	s.doLoginOneFactor(ctx, s.T(), "john", "password", false, "")
+	s.verifyURLIs(ctx, s.T(), HomeBaseURL+"/")
+
+	s.doVisit(s.T(), fmt.Sprintf("%s?rd=https://singlefactor.example.com:8080/secret.html", GetLoginBaseURL()))
+	s.verifyURLIs(ctx, s.T(), "https://singlefactor.example.com:8080/secret.html")
+}
+
+func (s *OneFactorOnlyWebSuite) TestShouldNotRedirectAlreadyAuthenticatedUserToUnsafeURL() {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	s.doLoginOneFactor(ctx, s.T(), "john", "password", false, "")
+	s.verifyURLIs(ctx, s.T(), HomeBaseURL+"/")
+
+	// Visit the login page and wait for redirection to 2FA page with success icon displayed.
+	s.doVisit(s.T(), fmt.Sprintf("%s?rd=https://secure.example.local:8080", GetLoginBaseURL()))
+	s.verifyNotificationDisplayed(ctx, s.T(), "There was an issue redirecting the user. Check that the redirection URI matches the domain.")
 }
 
 func (s *OneFactorOnlySuite) TestWeb() {

@@ -101,10 +101,8 @@ func Handle1FAResponse(ctx *middlewares.AutheliaCtx, targetURI, requestMethod st
 	}
 
 	ctx.Logger.Debugf("Redirection URL %s is safe", targetURI)
+	err = ctx.SetJSONBody(redirectResponse{Redirect: targetURI})
 
-	response := redirectResponse{Redirect: targetURI}
-
-	err = ctx.SetJSONBody(response)
 	if err != nil {
 		ctx.Logger.Errorf("Unable to set redirection URL in body: %s", err)
 	}
@@ -125,15 +123,17 @@ func Handle2FAResponse(ctx *middlewares.AutheliaCtx, targetURI string) {
 		return
 	}
 
-	targetURL, err := url.ParseRequestURI(targetURI)
+	valid, err := utils.IsRedirectionURISafe(targetURI, ctx.Configuration.Session.Domain)
 
 	if err != nil {
-		ctx.Error(fmt.Errorf("Unable to parse target URL: %s", err), mfaValidationFailedMessage)
+		ctx.Error(fmt.Errorf("Unable to check target URL: %s", err), mfaValidationFailedMessage)
 		return
 	}
 
-	if targetURL != nil && utils.IsRedirectionSafe(*targetURL, ctx.Configuration.Session.Domain) {
+	if valid {
+		ctx.Logger.Debugf("Redirection URL %s is safe", targetURI)
 		err := ctx.SetJSONBody(redirectResponse{Redirect: targetURI})
+
 		if err != nil {
 			ctx.Logger.Errorf("Unable to set redirection URL in body: %s", err)
 		}

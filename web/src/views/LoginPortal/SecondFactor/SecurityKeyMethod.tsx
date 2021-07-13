@@ -47,7 +47,7 @@ const SecurityKeyMethod = function (props: Props) {
 
     const doInitiateSignIn = useCallback(async () => {
         // If user is already authenticated, we don't initiate sign in process.
-        if (!props.registered || props.authenticationLevel >= AuthenticationLevel.TwoFactor) {
+        if (!props.registered || props.authenticationLevel === AuthenticationLevel.TwoFactor) {
             return;
         }
 

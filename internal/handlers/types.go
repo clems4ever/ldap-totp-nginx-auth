@@ -53,6 +53,16 @@ type firstFactorRequestBody struct {
 	// TODO(c.michaud): add required validation once the above PR is merged.
 }
 
+// checkURIWithinDomainRequestBody represents the JSON body received by the endpoint checking if an URI is within
+// the configured domain.
+type checkURIWithinDomainRequestBody struct {
+	URI string `json:"uri"`
+}
+
+type checkURIWithinDomainResponseBody struct {
+	OK bool `json:"ok"`
+}
+
 // redirectResponse represent the response sent by the first factor endpoint
 // when a redirection URL has been provided.
 type redirectResponse struct {

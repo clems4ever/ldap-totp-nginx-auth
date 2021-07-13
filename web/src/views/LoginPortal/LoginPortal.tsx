@@ -1,14 +1,14 @@
-import React, { useEffect, Fragment, ReactNode, useState, useCallback } from "react";
+import React, { Fragment, ReactNode, useCallback, useEffect, useState } from "react";
 
-import { Switch, Route, Redirect, useHistory, useLocation } from "react-router";
+import { Redirect, Route, Switch, useHistory, useLocation } from "react-router";
 
 import {
+    AuthenticatedRoute,
     FirstFactorRoute,
+    SecondFactorPushRoute,
     SecondFactorRoute,
     SecondFactorTOTPRoute,
-    SecondFactorPushRoute,
     SecondFactorU2FRoute,
-    AuthenticatedRoute,
 } from "@constants/Routes";
 import { useConfiguration } from "@hooks/Configuration";
 import { useNotifications } from "@hooks/NotificationsContext";
@@ -18,6 +18,7 @@ import { useRequestMethod } from "@hooks/RequestMethod";
 import { useAutheliaState } from "@hooks/State";
 import { useUserPreferences as userUserInfo } from "@hooks/UserInfo";
 import { SecondFactorMethod } from "@models/Methods";
+import { checkSafeRedirection } from "@services/SafeRedirection";
 import { AuthenticationLevel } from "@services/State";
 import LoadingPage from "@views/LoadingPage/LoadingPage";
 import AuthenticatedView from "@views/LoginPortal/AuthenticatedView/AuthenticatedView";
@@ -28,6 +29,9 @@ export interface Props {
     rememberMe: boolean;
     resetPassword: boolean;
 }
+
+const RedirectionErrorMessage =
+    "There was an issue redirecting the user. Check that the redirection URI matches the domain.";
 
 const LoginPortal = function (props: Props) {
     const history = useHistory();
@@ -87,7 +91,31 @@ const LoginPortal = function (props: Props) {
 
     // Redirect to the correct stage if not enough authenticated
     useEffect(() => {
-        if (state) {
+        (async function () {
+            if (!state) {
+                return;
+            }
+
+            if (
+                redirectionURL &&
+                ((configuration &&
+                    !configuration.second_factor_enabled &&
+                    state.authentication_level >= AuthenticationLevel.OneFactor) ||
+                    state.authentication_level === AuthenticationLevel.TwoFactor)
+            ) {
+                try {
+                    const res = await checkSafeRedirection(redirectionURL);
+                    if (res && res.ok) {
+                        redirector(redirectionURL);
+                    } else {
+                        createErrorNotification(RedirectionErrorMessage);
+                    }
+                } catch (err) {
+                    createErrorNotification(RedirectionErrorMessage);
+                }
+                return;
+            }
+
             const redirectionSuffix = redirectionURL
                 ? `?rd=${encodeURIComponent(redirectionURL)}${requestMethod ? `&rm=${requestMethod}` : ""}`
                 : "";
@@ -108,8 +136,18 @@ const LoginPortal = function (props: Props) {
                     }
                 }
             }
-        }
-    }, [state, redirectionURL, requestMethod, redirect, userInfo, setFirstFactorDisabled, configuration]);
+        })();
+    }, [
+        state,
+        redirectionURL,
+        requestMethod,
+        redirect,
+        userInfo,
+        setFirstFactorDisabled,
+        configuration,
+        createErrorNotification,
+        redirector,
+    ]);
 
     const handleAuthSuccess = async (redirectionURL: string | undefined) => {
         if (redirectionURL) {
