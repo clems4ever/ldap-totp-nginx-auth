@@ -111,32 +111,13 @@ func TestShouldErrorSecretNotExist(t *testing.T) {
 	assert.EqualError(t, errors[11], "the SQL username and password must be provided")
 }
 
-func TestShouldErrorPermissionsOnLocalFS(t *testing.T) {
-	if runtime.GOOS == windows {
-		t.Skip("skipping test due to being on windows")
-	}
-
-	resetEnv()
-
-	_ = os.Mkdir("/tmp/noperms/", 0000)
-	_, errors := Read("/tmp/noperms/configuration.yml")
-
-	require.Len(t, errors, 3)
-
-	require.EqualError(t, errors[0], "Unable to find config file: /tmp/noperms/configuration.yml")
-	require.EqualError(t, errors[1], "Generating config file: /tmp/noperms/configuration.yml")
-	require.EqualError(t, errors[2], "Unable to generate /tmp/noperms/configuration.yml: open /tmp/noperms/configuration.yml: permission denied")
-}
-
-func TestShouldErrorAndGenerateConfigFile(t *testing.T) {
+func TestShouldErrorOnNotFound(t *testing.T) {
 	_, errors := Read("./nonexistent.yml")
 	_ = os.Remove("./nonexistent.yml")
 
-	require.Len(t, errors, 3)
+	require.Len(t, errors, 1)
 
 	require.EqualError(t, errors[0], "Unable to find config file: ./nonexistent.yml")
-	require.EqualError(t, errors[1], "Generating config file: ./nonexistent.yml")
-	require.EqualError(t, errors[2], "Generated configuration at: ./nonexistent.yml")
 }
 
 func TestShouldErrorPermissionsConfigFile(t *testing.T) {

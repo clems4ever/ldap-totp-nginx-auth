@@ -3,11 +3,13 @@ package commands
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/simia-tech/crypt"
 	"github.com/spf13/cobra"
 
 	"github.com/authelia/authelia/internal/authentication"
+	"github.com/authelia/authelia/internal/configuration"
 	"github.com/authelia/authelia/internal/configuration/schema"
 )
 
@@ -19,6 +21,7 @@ func init() {
 	HashPasswordCmd.Flags().IntP("parallelism", "p", schema.DefaultPasswordConfiguration.Parallelism, "[argon2id] set the parallelism param")
 	HashPasswordCmd.Flags().IntP("key-length", "k", schema.DefaultPasswordConfiguration.KeyLength, "[argon2id] set the key length param")
 	HashPasswordCmd.Flags().IntP("salt-length", "l", schema.DefaultPasswordConfiguration.SaltLength, "set the auto-generated salt length")
+	HashPasswordCmd.Flags().String("config", "", "Configuration file")
 }
 
 // HashPasswordCmd password hashing command.
@@ -33,6 +36,25 @@ var HashPasswordCmd = &cobra.Command{
 		saltLength, _ := cobraCmd.Flags().GetInt("salt-length")
 		memory, _ := cobraCmd.Flags().GetInt("memory")
 		parallelism, _ := cobraCmd.Flags().GetInt("parallelism")
+
+		configPathFlag, _ := cobraCmd.Flags().GetString("config")
+		if configPathFlag != "" {
+			config, errs := configuration.Read(configPathFlag)
+			if len(errs) > 0 {
+				for _, err := range errs {
+					log.Print(err)
+				}
+
+				os.Exit(1)
+			}
+
+			sha512 = config.AuthenticationBackend.File.Password.Algorithm == "sha512"
+			iterations = config.AuthenticationBackend.File.Password.Iterations
+			keyLength = config.AuthenticationBackend.File.Password.KeyLength
+			saltLength = config.AuthenticationBackend.File.Password.SaltLength
+			memory = config.AuthenticationBackend.File.Password.Memory
+			parallelism = config.AuthenticationBackend.File.Password.Parallelism
+		}
 
 		var err error
 		var hash string

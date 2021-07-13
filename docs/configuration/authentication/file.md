@@ -158,6 +158,8 @@ For instance to generate a hash with the docker image just run:
     $ docker run authelia/authelia:latest authelia hash-password 'yourpassword'
     Password hash: $argon2id$v=19$m=65536$3oc26byQuSkQqksq$zM1QiTvVPrMfV6BVLs2t4gM+af5IN7euO0VB6+Q8ZFs
 
+You may also use the `--config` flag to point to your existing configuration. When used, the values defined in the config will be used instead.
+
 Full CLI Help Documentation:
 
 ```
@@ -167,6 +169,7 @@ Usage:
   authelia hash-password [password] [flags]
 
 Flags:
+      --config string     Configuration file
   -h, --help              help for hash-password
   -i, --iterations int    set the number of hashing iterations (default 1)
   -k, --key-length int    [argon2id] set the key length param (default 32)
@@ -174,7 +177,7 @@ Flags:
   -p, --parallelism int   [argon2id] set the parallelism param (default 8)
   -s, --salt string       set the salt string
   -l, --salt-length int   set the auto-generated salt length (default 16)
-  -z, --sha512            use sha512 as the algorithm (defaults iterations to 50000, change with -i)
+  -z, --sha512            use sha512 as the algorithm (changes iterations to 50000, change with -i)
 ```
 
 ### Password hash algorithm
