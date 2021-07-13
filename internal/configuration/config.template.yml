@@ -595,7 +595,7 @@ notifier:
     ## Enables additional debug messages.
     # enable_client_debug_messages: false
 
-    ## SECURITY NOTICE: It's not recommended to change this option, and highly discouraged to have it below 8 for
+    ## SECURITY NOTICE: It's not recommended changing this option, and highly discouraged to have it below 8 for
     ## security reasons.
     # minimum_parameter_entropy: 8
 
@@ -611,36 +611,42 @@ notifier:
         ## The client secret is a shared secret between Authelia and the consumer of this client.
         # secret: this_is_a_secret
 
+        ## Sets the client to public. This should typically not be set, please see the documentation for usage.
+        # public: false
+
         ## The policy to require for this client; one_factor or two_factor.
         # authorization_policy: two_factor
+
+        ## Audience this client is allowed to request.
+        # audience: []
+
+        ## Scopes this client is allowed to request.
+        # scopes:
+          # - openid
+          # - groups
+          # - email
+          # - profile
 
         ## Redirect URI's specifies a list of valid case-sensitive callbacks for this client.
         # redirect_uris:
         # - https://oidc.example.com:8080/oauth2/callback
 
-        ## Scopes defines the valid scopes this client can request
-        # scopes:
-        # - openid
-        # - groups
-        # - email
-        # - profile
-
         ## Grant Types configures which grants this client can obtain.
         ## It's not recommended to define this unless you know what you're doing.
         # grant_types:
-        # - refresh_token
-        # - authorization_code
+          # - refresh_token
+          # - authorization_code
 
         ## Response Types configures which responses this client can be sent.
         ## It's not recommended to define this unless you know what you're doing.
         # response_types:
-        # - code
+          # - code
 
         ## Response Modes configures which response modes this client supports.
         # response_modes:
-        # - form_post
-        # - query
-        # - fragment
+          # - form_post
+          # - query
+          # - fragment
 
         ## The algorithm used to sign userinfo endpoint responses for this client, either none or RS256.
         # userinfo_signing_algorithm: none

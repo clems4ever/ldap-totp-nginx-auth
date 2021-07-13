@@ -25,12 +25,16 @@ type OpenIDConnectConfiguration struct {
 
 // OpenIDConnectClientConfiguration configuration for an OpenID Connect client.
 type OpenIDConnectClientConfiguration struct {
-	ID            string   `mapstructure:"id"`
-	Description   string   `mapstructure:"description"`
-	Secret        string   `mapstructure:"secret"`
-	RedirectURIs  []string `mapstructure:"redirect_uris"`
-	Policy        string   `mapstructure:"authorization_policy"`
+	ID          string `mapstructure:"id"`
+	Description string `mapstructure:"description"`
+	Secret      string `mapstructure:"secret"`
+	Public      bool   `mapstructure:"public"`
+
+	Policy string `mapstructure:"authorization_policy"`
+
+	Audience      []string `mapstructure:"audience"`
 	Scopes        []string `mapstructure:"scopes"`
+	RedirectURIs  []string `mapstructure:"redirect_uris"`
 	GrantTypes    []string `mapstructure:"grant_types"`
 	ResponseTypes []string `mapstructure:"response_types"`
 	ResponseModes []string `mapstructure:"response_modes"`

@@ -12,7 +12,7 @@ import (
 
 func newDefaultConfig() schema.Configuration {
 	config := schema.Configuration{}
-	config.Host = "127.0.0.1"
+	config.Host = loopback
 	config.Port = 9090
 	config.Logging.Level = "info"
 	config.Logging.Format = "text"

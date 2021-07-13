@@ -84,13 +84,21 @@ func TestShouldRaiseErrorWhenOIDCServerClientBadValues(t *testing.T) {
 						"http://abc@%two",
 					},
 				},
+				{
+					ID:     "client-check-uri-abs",
+					Secret: "a-secret",
+					Policy: twoFactorPolicy,
+					RedirectURIs: []string{
+						"google.com",
+					},
+				},
 			},
 		},
 	}
 
 	ValidateIdentityProviders(config, validator)
 
-	require.Len(t, validator.Errors(), 7)
+	require.Len(t, validator.Errors(), 8)
 
 	assert.Equal(t, schema.DefaultOpenIDConnectClientConfiguration.Policy, config.OIDC.Clients[0].Policy)
 	assert.EqualError(t, validator.Errors()[0], fmt.Sprintf(errFmtOIDCServerClientInvalidSecret, ""))
@@ -98,8 +106,9 @@ func TestShouldRaiseErrorWhenOIDCServerClientBadValues(t *testing.T) {
 	assert.EqualError(t, validator.Errors()[2], fmt.Sprintf(errFmtOIDCServerClientInvalidPolicy, "a-client", "a-policy"))
 	assert.EqualError(t, validator.Errors()[3], fmt.Sprintf(errFmtOIDCServerClientInvalidPolicy, "a-client", "a-policy"))
 	assert.EqualError(t, validator.Errors()[4], fmt.Sprintf(errFmtOIDCServerClientRedirectURICantBeParsed, "client-check-uri-parse", "http://abc@%two", errors.New("parse \"http://abc@%two\": invalid URL escape \"%tw\"")))
-	assert.EqualError(t, validator.Errors()[5], "OIDC Server has one or more clients with an empty ID")
-	assert.EqualError(t, validator.Errors()[6], "OIDC Server has clients with duplicate ID's")
+	assert.EqualError(t, validator.Errors()[5], fmt.Sprintf(errFmtOIDCClientRedirectURIAbsolute, "client-check-uri-abs", "google.com"))
+	assert.EqualError(t, validator.Errors()[6], "OIDC Server has one or more clients with an empty ID")
+	assert.EqualError(t, validator.Errors()[7], "OIDC Server has clients with duplicate ID's")
 }
 
 func TestShouldRaiseErrorWhenOIDCClientConfiguredWithBadScopes(t *testing.T) {
@@ -237,6 +246,129 @@ func TestValidateIdentityProvidersShouldRaiseWarningOnSecurityIssue(t *testing.T
 	require.Len(t, validator.Warnings(), 1)
 
 	assert.EqualError(t, validator.Warnings()[0], "SECURITY ISSUE: OIDC minimum parameter entropy is configured to an unsafe value, it should be above 8 but it's configured to 1.")
+}
+
+func TestValidateIdentityProvidersShouldRaiseErrorsOnInvalidPublicClients(t *testing.T) {
+	validator := schema.NewStructValidator()
+	config := &schema.IdentityProvidersConfiguration{
+		OIDC: &schema.OpenIDConnectConfiguration{
+			HMACSecret:       "hmac1",
+			IssuerPrivateKey: "key2",
+			Clients: []schema.OpenIDConnectClientConfiguration{
+				{
+					ID:     "client-with-invalid-secret",
+					Secret: "a-secret",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						"https://localhost",
+					},
+				},
+				{
+					ID:     "client-with-invalid-redirect-path",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						"https://localhost/callback",
+					},
+				},
+				{
+					ID:     "client-with-invalid-redirect-queryparams",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						"https://localhost?api=x",
+					},
+				},
+				{
+					ID:     "client-with-invalid-redirect-scheme",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						"ftp://localhost",
+					},
+				},
+				{
+					ID:     "client-with-invalid-redirect-noscheme",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						localhost,
+					},
+				},
+				{
+					ID:     "client-with-invalid-redirect-host",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						"https://google.com",
+					},
+				},
+				{
+					ID:     "client-with-invalid-redirect-fragment",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						"https://localhost#fragment",
+					},
+				},
+			},
+		},
+	}
+
+	ValidateIdentityProviders(config, validator)
+
+	require.Len(t, validator.Errors(), 7)
+	assert.Len(t, validator.Warnings(), 0)
+
+	assert.EqualError(t, validator.Errors()[0], fmt.Sprintf(errFmtOIDCClientPublicInvalidSecret, "client-with-invalid-secret"))
+	assert.EqualError(t, validator.Errors()[1], fmt.Sprintf(errFmtOIDCClientPublicRedirectURIPath, "client-with-invalid-redirect-path", "https://localhost/callback"))
+	assert.EqualError(t, validator.Errors()[2], fmt.Sprintf(errFmtOIDCClientPublicRedirectURIQuery, "client-with-invalid-redirect-queryparams", "https://localhost?api=x"))
+	assert.EqualError(t, validator.Errors()[3], fmt.Sprintf(errFmtOIDCServerClientRedirectURI, "client-with-invalid-redirect-scheme", "ftp://localhost", "ftp"))
+	assert.EqualError(t, validator.Errors()[4], fmt.Sprintf(errFmtOIDCClientRedirectURIAbsolute, "client-with-invalid-redirect-noscheme", "localhost"))
+	assert.EqualError(t, validator.Errors()[5], fmt.Sprintf(errFmtOIDCClientPublicRedirectURIHost, "client-with-invalid-redirect-host", "https://google.com"))
+	assert.EqualError(t, validator.Errors()[6], fmt.Sprintf(errFmtOIDCClientPublicRedirectURIFragment, "client-with-invalid-redirect-fragment", "https://localhost#fragment"))
+}
+
+func TestValidateIdentityProvidersShouldNotRaiseErrorsOnValidPublicClients(t *testing.T) {
+	validator := schema.NewStructValidator()
+	config := &schema.IdentityProvidersConfiguration{
+		OIDC: &schema.OpenIDConnectConfiguration{
+			HMACSecret:       "hmac1",
+			IssuerPrivateKey: "key2",
+			Clients: []schema.OpenIDConnectClientConfiguration{
+				{
+					ID:     "installed-app-client",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						oauth2InstalledApp,
+					},
+				},
+				{
+					ID:     "client-with-https-scheme",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						"https://localhost:9000",
+					},
+				},
+				{
+					ID:     "client-with-loopback",
+					Public: true,
+					Policy: "two_factor",
+					RedirectURIs: []string{
+						"http://127.0.0.1",
+					},
+				},
+			},
+		},
+	}
+
+	ValidateIdentityProviders(config, validator)
+
+	assert.Len(t, validator.Errors(), 0)
+	assert.Len(t, validator.Warnings(), 0)
 }
 
 func TestValidateIdentityProvidersShouldSetDefaultValues(t *testing.T) {

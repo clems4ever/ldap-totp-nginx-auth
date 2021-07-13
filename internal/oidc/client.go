@@ -12,20 +12,21 @@ import (
 // NewClient creates a new InternalClient.
 func NewClient(config schema.OpenIDConnectClientConfiguration) (client *InternalClient) {
 	client = &InternalClient{
-		ID:            config.ID,
-		Description:   config.Description,
-		Policy:        authorization.PolicyToLevel(config.Policy),
-		Secret:        []byte(config.Secret),
+		ID:          config.ID,
+		Description: config.Description,
+		Secret:      []byte(config.Secret),
+		Public:      config.Public,
+
+		Policy: authorization.PolicyToLevel(config.Policy),
+
+		Audience:      config.Audience,
+		Scopes:        config.Scopes,
 		RedirectURIs:  config.RedirectURIs,
 		GrantTypes:    config.GrantTypes,
 		ResponseTypes: config.ResponseTypes,
-		Scopes:        config.Scopes,
+		ResponseModes: []fosite.ResponseModeType{fosite.ResponseModeDefault},
 
 		UserinfoSigningAlgorithm: config.UserinfoSigningAlgorithm,
-
-		ResponseModes: []fosite.ResponseModeType{
-			fosite.ResponseModeDefault,
-		},
 	}
 
 	for _, mode := range config.ResponseModes {

@@ -33,21 +33,21 @@ type OpenIDConnectStore struct {
 
 // InternalClient represents the client internally.
 type InternalClient struct {
-	ID            string   `json:"id"`
-	Description   string   `json:"-"`
-	Secret        []byte   `json:"client_secret,omitempty"`
-	RedirectURIs  []string `json:"redirect_uris"`
-	GrantTypes    []string `json:"grant_types"`
-	ResponseTypes []string `json:"response_types"`
-	Scopes        []string `json:"scopes"`
-	Audience      []string `json:"audience"`
-	Public        bool     `json:"public"`
+	ID          string `json:"id"`
+	Description string `json:"-"`
+	Secret      []byte `json:"client_secret,omitempty"`
+	Public      bool   `json:"public"`
 
+	Policy authorization.Level `json:"-"`
+
+	Audience      []string                  `json:"audience"`
+	Scopes        []string                  `json:"scopes"`
+	RedirectURIs  []string                  `json:"redirect_uris"`
+	GrantTypes    []string                  `json:"grant_types"`
+	ResponseTypes []string                  `json:"response_types"`
 	ResponseModes []fosite.ResponseModeType `json:"response_modes"`
 
 	UserinfoSigningAlgorithm string `json:"userinfo_signed_response_alg,omitempty"`
-
-	Policy authorization.Level `json:"-"`
 }
 
 // KeyManager keeps track of all of the active/inactive rsa keys and provides them to services requiring them.

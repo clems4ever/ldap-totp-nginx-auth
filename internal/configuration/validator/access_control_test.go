@@ -192,7 +192,7 @@ func TestShouldReturnCorrectResultsForValidNetworkGroups(t *testing.T) {
 	}
 
 	validNetwork := IsNetworkGroupValid(config, "internal")
-	invalidNetwork := IsNetworkGroupValid(config, "127.0.0.1")
+	invalidNetwork := IsNetworkGroupValid(config, loopback)
 
 	assert.True(t, validNetwork)
 	assert.False(t, invalidNetwork)

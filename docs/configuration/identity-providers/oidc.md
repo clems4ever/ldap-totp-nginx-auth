@@ -34,7 +34,7 @@ for which stage will have each feature, and may evolve over time:
     </thead>
     <tbody>
       <tr>
-        <td rowspan="7" class="tbl-header tbl-beta-stage">beta1</td>
+        <td rowspan="7" class="tbl-header tbl-beta-stage">beta1 (4.29.0)</td>
         <td><a href="https://openid.net/specs/openid-connect-core-1_0.html#Consent" target="_blank" rel="noopener noreferrer">User Consent</a></td>
       </tr>
       <tr>
@@ -56,8 +56,23 @@ for which stage will have each feature, and may evolve over time:
         <td class="tbl-beta-stage">Per Client List of Valid Redirection URI's</td>
       </tr>
       <tr>
-        <td rowspan="1" class="tbl-header tbl-beta-stage">beta2 <sup>1</sup></td>
+        <td rowspan="6" class="tbl-header tbl-beta-stage">beta2 (4.30.0) <sup>1</sup></td>
         <td class="tbl-beta-stage"><a href="https://openid.net/specs/openid-connect-core-1_0.html#UserInfo" target="_blank" rel="noopener noreferrer">Userinfo Endpoint</a> (missed in beta1)</td>
+      </tr>
+      <tr>
+        <td class="tbl-beta-stage">Parameter Entropy Configuration</td>
+      </tr>
+      <tr>
+        <td class="tbl-beta-stage">Token/Code Lifespan Configuration</td>
+      </tr>
+      <tr>
+        <td class="tbl-beta-stage">Client Debug Messages</td>
+      </tr>
+      <tr>
+        <td class="tbl-beta-stage">Client Audience</td>
+      </tr>
+      <tr>
+        <td class="tbl-beta-stage">Public Clients</td>
       </tr>
       <tr>
         <td rowspan="2" class="tbl-header tbl-beta-stage">beta3 <sup>1</sup></td>
@@ -115,14 +130,16 @@ identity_providers:
       - id: myapp
         description: My Application
         secret: this_is_a_secret
+        public: false
         authorization_policy: two_factor
-        redirect_uris:
-          - https://oidc.example.com:8080/oauth2/callback
+        audience: []
         scopes:
           - openid
           - groups
           - email
           - profile
+        redirect_uris:
+          - https://oidc.example.com:8080/oauth2/callback
         grant_types:
           - refresh_token
           - authorization_code
@@ -283,6 +300,23 @@ required: yes
 
 The shared secret between Authelia and the application consuming this client. Currently this is stored in plain text.
 
+#### public
+<div markdown="1">
+type: bool
+{: .label .label-config .label-purple }
+default: false
+{: .label .label-config .label-blue }
+required: no
+{: .label .label-config .label-green }
+</div>
+
+The public option enables a client where the end user or a malicious application could reasonably obtain the [client id](#id)
+and [client secret](#secret). This is particularly useful for SPA's and CLI tools. This option requires (and allows)
+setting the [client secret](#secret) to a blank string.
+
+In addition to the standard redirect URI requirements, the host must be `localhost` or `127.0.0.1`. Alternatively a
+redirect URI of exactly `urn:ietf:wg:oauth:2.0:oob` is valid.
+
 #### authorization_policy
 <div markdown="1">
 type: string
@@ -295,16 +329,15 @@ required: no
 
 The authorization policy for this client. Either `one_factor` or `two_factor`.
 
-#### redirect_uris
+#### audience
 <div markdown="1">
 type: list(string)
-{: .label .label-config .label-purple }
-required: yes
-{: .label .label-config .label-red }
+{: .label .label-config .label-purple } 
+required: no
+{: .label .label-config .label-green }
 </div>
 
-A list of valid callback URL's this client will redirect to. All other callbacks will be considered unsafe. The URL's
-are case-sensitive.
+A list of audiences this client is allowed to request.
 
 #### scopes
 <div markdown="1">
@@ -316,7 +349,18 @@ required: no
 {: .label .label-config .label-green }
 </div>
 
-A list of scopes to allow this client to consume. See [scope definitions](#scope-definitions) for more information.
+A list of scopes this client is allowed to request. See [scope definitions](#scope-definitions) for more information.
+
+#### redirect_uris
+<div markdown="1">
+type: list(string)
+{: .label .label-config .label-purple }
+required: yes
+{: .label .label-config .label-red }
+</div>
+
+A list of valid callback URL's this client will redirect to. All other callbacks will be considered unsafe. The URL's
+are case-sensitive. The URI must include a scheme and that scheme must be one of `http` or `https`.
 
 #### grant_types
 <div markdown="1">
