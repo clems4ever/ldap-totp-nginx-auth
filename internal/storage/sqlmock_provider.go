@@ -47,7 +47,7 @@ func NewSQLMockProvider() (*SQLMockProvider, sqlmock.Sqlmock) {
 	db, mock, err := sqlmock.New()
 
 	if err != nil {
-		provider.log.Fatalf("Unable to create SQL database: %s", err)
+		provider.log.Fatalf("unable to create SQL database: %s", err)
 	}
 
 	provider.db = db

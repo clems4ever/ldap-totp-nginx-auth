@@ -77,11 +77,11 @@ func NewPostgreSQLProvider(configuration schema.PostgreSQLStorageConfiguration) 
 
 	db, err := sql.Open("pgx", connectionString)
 	if err != nil {
-		provider.log.Fatalf("Unable to connect to SQL database: %v", err)
+		provider.log.Fatalf("unable to connect to SQL database: %v", err)
 	}
 
 	if err := provider.initialize(db); err != nil {
-		provider.log.Fatalf("Unable to initialize SQL database: %v", err)
+		provider.log.Fatalf("unable to initialize SQL database: %v", err)
 	}
 
 	return &provider

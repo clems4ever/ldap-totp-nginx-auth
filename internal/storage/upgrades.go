@@ -19,7 +19,7 @@ func (p *SQLProvider) upgradeCreateTableStatements(tx transaction, statements ma
 		if !utils.IsStringInSlice(table, existingTables) {
 			_, err := tx.Exec(fmt.Sprintf(statements[table], table))
 			if err != nil {
-				return fmt.Errorf("Unable to create table %s: %v", table, err)
+				return fmt.Errorf("unable to create table %s: %v", table, err)
 			}
 		}
 	}
@@ -63,7 +63,7 @@ func (p *SQLProvider) upgradeSchemaToVersion001(tx transaction, tables []string)
 	if p.name != "mysql" {
 		err = p.upgradeRunMultipleStatements(tx, p.sqlUpgradesCreateTableIndexesStatements[1])
 		if err != nil {
-			return fmt.Errorf("Unable to create index: %v", err)
+			return fmt.Errorf("unable to create index: %v", err)
 		}
 	}
 

@@ -47,11 +47,11 @@ func NewSQLiteProvider(path string) *SQLiteProvider {
 
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
-		provider.log.Fatalf("Unable to create SQL database %s: %s", path, err)
+		provider.log.Fatalf("unable to create SQL database %s: %s", path, err)
 	}
 
 	if err := provider.initialize(db); err != nil {
-		provider.log.Fatalf("Unable to initialize SQL database %s: %s", path, err)
+		provider.log.Fatalf("unable to initialize SQL database %s: %s", path, err)
 	}
 
 	return &provider

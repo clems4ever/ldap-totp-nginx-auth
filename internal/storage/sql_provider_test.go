@@ -272,7 +272,7 @@ func TestSQLProviderMethodsTOTP(t *testing.T) {
 
 	// Test Blank Rows
 	secret, err = provider.LoadTOTPSecret(unitTestUser)
-	assert.EqualError(t, err, "No TOTP secret registered")
+	assert.EqualError(t, err, "no TOTP secret registered")
 	assert.Equal(t, "", secret)
 }
 
@@ -332,7 +332,7 @@ func TestSQLProviderMethodsU2F(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"keyHandle", "publicKey"}))
 
 	keyHandle, publicKey, err = provider.LoadU2FDeviceHandle(unitTestUser)
-	assert.EqualError(t, err, "No U2F device handle found")
+	assert.EqualError(t, err, "no U2F device handle found")
 	assert.Equal(t, []byte(nil), keyHandle)
 	assert.Equal(t, []byte(nil), publicKey)
 }
